@@ -85,19 +85,23 @@ func main() {
 * Retrieve user profile & nutrition stats
 * Zero external deps beyond the Go standard library
 * Context/timeout aware
-* Register food and snack intake (...)
-* Automatic retry with exponential back‑off (...)
 
-## Legal Notice
+## TODO
 
-* This project is **not** affiliated with or endorsed by **YAZIO GmbH**.
-* Reverse‑engineering YAZIO’s private API may violate its Terms of Service. **Use at your own risk.**
-* The authors provide the software **as is**, without warranty of any kind. See the *MIT License* for details.
-* "YAZIO" and any related marks are trademarks of YAZIO GmbH. All trademarks are the property of their respective owners.
+* Register food and snack intake
+* Automatic retry with exponential back‑off
+
+## Legal Notice
+
+* **No affiliation** with YAZIO GmbH  
+* **YAZIO** is a trademark of YAZIO GmbH  
+* **As-is** without warranty (MIT License)  
+* **Use at your own risk**: reverse-engineering may violate ToS  
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or pull request. By contributing, you agree to release your work under the MIT License.
+Contributions are welcome! Please open an issue or pull request.  
+By contributing, you agree to release your work under the MIT License.
 
 ## License
 
