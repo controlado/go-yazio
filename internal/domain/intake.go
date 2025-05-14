@@ -54,7 +54,7 @@ type SingleAverage struct {
 }
 
 func (sa SingleAverage) String() string {
-	return fmt.Sprintf("%d days: %.3f", sa.DaysLength, sa.Average)
+	return fmt.Sprintf("%d days: %.2f", sa.DaysLength, sa.Average)
 }
 
 func (sr SingleRange) Average() SingleAverage {
