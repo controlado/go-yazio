@@ -1,6 +1,10 @@
 # yazio-go
 
-> **Unofficial Go SDK for the YAZIO mobile API**
+Unofficial Go SDK for the YAZIO mobile API
+
+[![mit-badge](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![tests-badge](https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg)](https://github.com/controlado/go-yazio/actions/workflows/test.yml)
+[![wakatime-badge](https://wakatime.com/badge/github/controlado/go-yazio.svg)](https://wakatime.com/badge/github/controlado/go-yazio)
 
 ## Status
 
