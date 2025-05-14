@@ -2,7 +2,6 @@ package yazio
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -18,13 +17,8 @@ func TestNew(t *testing.T) {
 		client.WithBaseURL(DefaultBaseURL),
 	)
 	api, err := New(c)
-
-	switch {
-	case err != nil:
-		t.Fatalf("want Yazio, got err: %v", err)
-	case api == nil:
-		t.Fatalf("want Yazio, got nil")
-	}
+	assert.NotNil(t, api)
+	assert.NoError(t, err)
 }
 
 func TestYazio_Login(t *testing.T) {
@@ -45,8 +39,7 @@ func TestYazio_Login(t *testing.T) {
 			RefreshToken: "302af606a79142cb2ab862bf9488cfd4",
 		}
 
-		err := json.NewEncoder(w).Encode(respBody)
-		assert.NoError(t, err)
+		assert.Write(t, w, respBody)
 	}
 
 	var (
@@ -61,6 +54,7 @@ func TestYazio_Login(t *testing.T) {
 	assert.NoError(t, err)
 
 	cred := NewPasswordCred(username, password)
-	_, err = api.Login(ctx, cred)
+	user, err := api.Login(ctx, cred)
+	assert.NotNil(t, user)
 	assert.NoError(t, err)
 }

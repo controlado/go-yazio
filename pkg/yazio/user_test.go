@@ -123,9 +123,11 @@ func TestUser_Macros(t *testing.T) {
 		assert.Equal(t, r.Method, http.MethodGet)
 		assert.Equal(t, r.URL.Path, macrosEndpoint)
 
-		q := r.URL.Query()
-		queryStartDate := q.Get("start")
-		queryEndDate := q.Get("end")
+		var (
+			q              = r.URL.Query()
+			queryStartDate = q.Get("start")
+			queryEndDate   = q.Get("end")
+		)
 
 		respBody := GetMacroIntakeDTO{
 			{
@@ -144,8 +146,7 @@ func TestUser_Macros(t *testing.T) {
 			},
 		}
 
-		err := json.NewEncoder(w).Encode(respBody)
-		assert.NoError(t, err)
+		assert.Write(t, w, respBody)
 	}
 
 	var (
@@ -198,20 +199,17 @@ func TestUser_Intake(t *testing.T) {
 			{
 				name: "valid args",
 				args: args{
-					ctx:       ctx,
-					kind:      domain.Sugar,
-					dateRange: domain.DateRange{Start: startDate, End: endDate},
+					ctx:  ctx,
+					kind: domain.Sugar,
+					dateRange: domain.DateRange{
+						Start: startDate,
+						End:   endDate,
+					},
 				},
 				wantErr: false,
 				want: domain.SingleRange{
-					{
-						Date:  startDate,
-						Value: 89.83,
-					},
-					{
-						Date:  endDate,
-						Value: 50.38,
-					},
+					{Date: startDate, Value: 89.83},
+					{Date: endDate, Value: 50.38},
 				},
 				serverHandler: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
 					assert.Equal(t, r.URL.Path, intakeEndpoint)
@@ -237,8 +235,7 @@ func TestUser_Intake(t *testing.T) {
 						queryStartDate: 89.83,
 						queryEndDate:   50.38,
 					}
-					err := json.NewEncoder(w).Encode(respBody)
-					assert.NoError(t, err)
+					assert.Write(t, w, respBody)
 				},
 			},
 		}

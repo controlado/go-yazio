@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -78,12 +77,11 @@ func TestClient_Request(t *testing.T) {
 					assert.Equal(t, r.Method, http.MethodPost)
 					assert.Equal(t, r.URL.Path, "/body")
 
-					var gotBody Payload
-					assert.NoError(t, json.NewDecoder(r.Body).Decode(&gotBody))
+					gotBody := assert.JSON(t, r.Body)
 					assert.Equal(t, gotBody["user"], "feminismo")
 
 					respBody := Payload{"success": true}
-					assert.NoError(t, json.NewEncoder(w).Encode(respBody))
+					assert.Write(t, w, respBody)
 				},
 			},
 			{
@@ -123,8 +121,7 @@ func TestClient_Request(t *testing.T) {
 			}
 
 			if tb.checkBody != nil {
-				var respBody Payload
-				assert.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+				respBody := assert.JSON(t, resp.Body)
 				tb.checkBody(t, respBody)
 			}
 		})

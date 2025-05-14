@@ -30,12 +30,10 @@ func TestResponse_BodyString(t *testing.T) {
 		{
 			name: "no content length",
 			httpResp: &http.Response{
-				ContentLength: 0,
 				Body: io.NopCloser(
 					strings.NewReader("success"),
 				),
 			},
-			wantBody: "",
 		},
 	}
 
@@ -45,9 +43,7 @@ func TestResponse_BodyString(t *testing.T) {
 
 			resp := &Response{Response: tb.httpResp}
 			got, err := resp.BodyString()
-			if err != nil {
-				t.Fatalf("want err (nil), got %v", err)
-			}
+			assert.NoError(t, err)
 
 			assert.Equal(t, got, tb.wantBody)
 		})
