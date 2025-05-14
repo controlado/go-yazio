@@ -2,8 +2,9 @@
 
 Unofficial Go SDK for the YAZIO mobile API
 
-[![mit-badge](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![tests-badge](https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg)](https://github.com/controlado/go-yazio/actions/workflows/test.yml)
+[![report-badge](https://goreportcard.com/badge/github.com/controlado/go-yazio)](https://goreportcard.com/report/github.com/controlado/go-yazio)
+[![mit-badge](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![wakatime-badge](https://wakatime.com/badge/github/controlado/go-yazio.svg)](https://wakatime.com/badge/github/controlado/go-yazio)
 
 ## Status
