@@ -22,17 +22,17 @@ go get github.com/controlado/yazio
 package main
 
 import (
-	"context"
-	"fmt"
-	"log"
+    "context"
+    "fmt"
+    "log"
 
-	"github.com/controlado/go-yazio/pkg/client"
-	"github.com/controlado/go-yazio/pkg/yazio"
+    "github.com/controlado/go-yazio/pkg/client"
+    "github.com/controlado/go-yazio/pkg/yazio"
 )
 
 const (
-	username = "username@email.com"
-	password = "superStrongPassword"
+    username = "username@email.com"
+    password = "superStrongPassword"
 )
 
 func main() {
@@ -40,24 +40,24 @@ func main() {
         ctx = context.Background()
         c   = client.New(
             client.WithBaseURL(yazio.DefaultBaseURL),
-		)
-	)
+        )
+    )
 
     api, err := yazio.New(c)
-	if err != nil {
-		log.Fatalf("building yazio api: %v", err)
-	}
+    if err != nil {
+        log.Fatalf("building yazio api: %v", err)
+    }
 
     cred := yazio.NewPasswordCred(username, password)
-	user, err := api.Login(ctx, cred)
-	if err != nil {
-		log.Fatalf("fetching user from api: %v", err)
-	}
+    user, err := api.Login(ctx, cred)
+    if err != nil {
+        log.Fatalf("fetching user from api: %v", err)
+    }
 
     userData, err := user.Data(ctx)
-	if err != nil {
-		log.Fatalf("fetching user data: %v", err)
-	}
+    if err != nil {
+        log.Fatalf("fetching user data: %v", err)
+    }
     // userData.String()
     // User(João da Silva)
 
@@ -66,9 +66,9 @@ func main() {
     // 22 January 2023 - 13 May 2025
 
     userMacros, err := user.Macros(ctx, sinceRegist)
-	if err != nil {
-		log.Fatalf("fetching user macros (since regist): %v", err)
-	}
+    if err != nil {
+        log.Fatalf("fetching user macros (since regist): %v", err)
+    }
     // userMacros.String()
     // Average 38 days
     // Kcal: 1659.870
