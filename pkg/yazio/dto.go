@@ -41,16 +41,13 @@ func (d *LoginDTO) toUser(c *client.Client) (application.User, error) {
 }
 
 type GetUserDataDTO struct {
-	ID string `json:"uuid"`
-
-	Token     string `json:"user_token"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	IconURL   string `json:"profile_image"`
-
-	Email       string `json:"email"`
-	EmailStatus string `json:"email_confirmation_status"`
-
+	ID           string `json:"uuid"`
+	Token        string `json:"user_token"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	IconURL      string `json:"profile_image"`
+	Email        string `json:"email"`
+	EmailStatus  string `json:"email_confirmation_status"`
 	Registration string `json:"registration_date"`
 	BirthDate    string `json:"date_of_birth"`
 }
