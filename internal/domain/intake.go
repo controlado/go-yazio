@@ -7,10 +7,23 @@ import (
 )
 
 const (
-	Salt  IntakeKind = "nutrient.salt"
-	Sugar IntakeKind = "nutrient.sugar"
-	Fiber IntakeKind = "nutrient.dietaryfiber"
-	Water IntakeKind = "water"
+	Salt        IntakeKind = "nutrient.salt"
+	Sugar       IntakeKind = "nutrient.sugar"
+	AddedSugar  IntakeKind = "nutrient.addedsugar"
+	Fiber       IntakeKind = "nutrient.dietaryfiber"
+	Energy      IntakeKind = "energy.energy"
+	Carb        IntakeKind = "nutrient.carb"
+	Protein     IntakeKind = "nutrient.protein"
+	Fat         IntakeKind = "nutrient.fat"
+	TransFat    IntakeKind = "nutrient.transfat"
+	Saturated   IntakeKind = "nutrient.saturated"
+	Cholesterol IntakeKind = "nutrient.cholesterol"
+	Sodium      IntakeKind = "nutrient.sodium"
+	VitaminD    IntakeKind = "vitamin.d"
+	Calcium     IntakeKind = "mineral.calcium"
+	Iron        IntakeKind = "mineral.iron"
+	Potassium   IntakeKind = "mineral.potassium"
+	Water       IntakeKind = "water"
 )
 
 type DateRange struct {
