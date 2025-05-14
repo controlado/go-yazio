@@ -7,7 +7,7 @@ import (
 
 	"github.com/controlado/go-yazio/internal/application"
 	"github.com/controlado/go-yazio/internal/domain"
-	"github.com/controlado/go-yazio/internal/infra/client"
+	"github.com/controlado/go-yazio/pkg/client"
 )
 
 type API struct {

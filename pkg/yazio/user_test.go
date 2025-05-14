@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/controlado/go-yazio/internal/domain"
-	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/internal/testutil/assert"
 	"github.com/controlado/go-yazio/internal/testutil/server"
+	"github.com/controlado/go-yazio/pkg/client"
 	"github.com/google/uuid"
 )
 

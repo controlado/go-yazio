@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/controlado/go-yazio/internal/domain"
-	"github.com/controlado/go-yazio/internal/infra/client"
+	"github.com/controlado/go-yazio/pkg/client"
 )
 
 type User struct {

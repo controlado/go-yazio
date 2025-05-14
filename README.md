@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/controlado/go-yazio/internal/infra/client"
-	"github.com/controlado/go-yazio/internal/infra/yazio"
+	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/pkg/yazio"
 )
 
 const (

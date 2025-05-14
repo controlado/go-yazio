@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/internal/testutil/assert"
 	"github.com/controlado/go-yazio/internal/testutil/server"
+	"github.com/controlado/go-yazio/pkg/client"
 )
 
 func TestNew(t *testing.T) {
