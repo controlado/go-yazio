@@ -23,8 +23,8 @@ go get github.com/controlado/yazio
 
 ```go
 const (
-	username = "email@email.com"
-	password = "superStrongPass"
+    username = "email@email.com"
+    password = "superStrongPass"
 )
 
 api, err := yazio.New(c)
@@ -36,8 +36,8 @@ cred := yazio.NewPasswordCred(username, password)
 user, err := api.Login(ctx, cred)
 if err != nil {
     // yazio.ErrRequestingToYazio
-	// yazio.ErrDecodingResponse
-	// yazio.ErrInvalidCredentials
+    // yazio.ErrDecodingResponse
+    // yazio.ErrInvalidCredentials
     log.Fatalf("fetching user from api: %v", err)
 }
 ```
@@ -49,9 +49,9 @@ Can be used after use [`Login`](#auth)
 ```go
 userData, err := user.Data(ctx)
 if err != nil {
-	// yazio.ErrRequestingToYazio
-	// yazio.ErrDecodingResponse
-	log.Fatalf("fetching user data from api: %v", err)
+    // yazio.ErrRequestingToYazio
+    // yazio.ErrDecodingResponse
+    log.Fatalf("fetching user data from api: %v", err)
 }
 // userData.String()
 // User(João da Silva)
@@ -62,9 +62,9 @@ sinceRegist := userData.SinceRegist()
 
 userMacros, err := user.Macros(ctx, sinceRegist)
 if err != nil {
-	// yazio.ErrRequestingToYazio
-	// yazio.ErrDecodingResponse
-	log.Fatalf("fetching user macros intakes (since regist): %v", err)
+    // yazio.ErrRequestingToYazio
+    // yazio.ErrDecodingResponse
+    log.Fatalf("fetching user macros intakes (since regist): %v", err)
 }
 // userMacros.Average().String()
 // Average 183 days
@@ -75,9 +75,9 @@ if err != nil {
 
 sugarIntakes, err := user.Intake(ctx, intake.Sugar, sinceRegist)
 if err != nil {
-	// yazio.ErrRequestingToYazio
-	// yazio.ErrDecodingResponse
-	log.Fatalf("fetching user sugar intakes (since regist): %v", err)
+    // yazio.ErrRequestingToYazio
+    // yazio.ErrDecodingResponse
+    log.Fatalf("fetching user sugar intakes (since regist): %v", err)
 }
 // sugarIntakes.Average().String()
 // 39 days: 37.99
