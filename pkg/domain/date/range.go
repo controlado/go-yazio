@@ -10,8 +10,7 @@ const (
 )
 
 type Range struct {
-	Start time.Time
-	End   time.Time
+	Start, End time.Time
 }
 
 func (r *Range) String() string {
