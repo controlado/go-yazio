@@ -28,6 +28,13 @@ const (
     password = "superStrongPass"
 )
 
+var (
+    ctx = context.Background()
+    c   = client.New(
+        client.WithBaseURL(yazio.BaseURL),
+    )
+)
+
 api, err := yazio.New(c)
 if err != nil { // yazio.ErrClientCannotBeNil
     log.Fatalf("building yazio api: %v", err)
