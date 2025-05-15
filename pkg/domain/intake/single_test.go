@@ -64,7 +64,7 @@ func TestSingleAverage_String(t *testing.T) {
 					DaysLength: 720,
 					Average:    5,
 				},
-				want: "720 days: 5.00 (mcg)",
+				want: "720 days: 5.0mcg",
 			},
 			{
 				name: "correct call (water)",
@@ -73,12 +73,12 @@ func TestSingleAverage_String(t *testing.T) {
 					DaysLength: 320,
 					Average:    2223,
 				},
-				want: "320 days: 2223.00 (ml)",
+				want: "320 days: 2223.0ml",
 			},
 			{
 				name: "zero-value",
 				sa:   SingleAverage{},
-				want: "0 days: 0.00 ()",
+				want: "Empty intakes data to calculate the average",
 			},
 		}
 	)

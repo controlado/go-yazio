@@ -45,7 +45,11 @@ type SingleAverage struct {
 }
 
 func (sa SingleAverage) String() string {
-	return fmt.Sprintf("%d days: %.2f (%s)",
+	if sa.DaysLength < 1 {
+		return "Empty intakes data to calculate the average"
+	}
+
+	return fmt.Sprintf("%d days: %.1f%s",
 		sa.DaysLength,
 		sa.Average,
 		sa.Kind.baseUnit,

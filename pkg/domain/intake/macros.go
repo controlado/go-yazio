@@ -54,12 +54,16 @@ type MacrosAverage struct {
 }
 
 func (ma MacrosAverage) String() string {
+	if ma.DaysLength < 1 {
+		return "Empty macro data to calculate the average"
+	}
+
 	stringParts := []string{
 		fmt.Sprintf("Average (%d days)", ma.DaysLength),
-		fmt.Sprintf("Energy: %.2f (%s)", ma.Energy, Energy.baseUnit),
-		fmt.Sprintf("Carb: %.2f (%s)", ma.Carb, Carb.baseUnit),
-		fmt.Sprintf("Fat: %.2f (%s)", ma.Fat, Fat.baseUnit),
-		fmt.Sprintf("Protein: %.2f (%s)", ma.Protein, Protein.baseUnit),
+		fmt.Sprintf("Energy: %.1f%s", ma.Energy, Energy.baseUnit),
+		fmt.Sprintf("Carb: %.1f%s", ma.Carb, Carb.baseUnit),
+		fmt.Sprintf("Fat: %.1f%s", ma.Fat, Fat.baseUnit),
+		fmt.Sprintf("Protein: %.1f%s", ma.Protein, Protein.baseUnit),
 	}
 	return strings.Join(stringParts, "\n")
 }

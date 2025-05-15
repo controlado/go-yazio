@@ -71,21 +71,17 @@ func TestMacrosAverage_String(t *testing.T) {
 				},
 				wantLines: []string{
 					`Average (1278 days)`,
-					`Energy: 1700.00 (kcal)`,
-					`Carb: 150.00 (g)`,
-					`Fat: 40.00 (g)`,
-					`Protein: 180.00 (g)`,
+					`Energy: 1700.0kcal`,
+					`Carb: 150.0g`,
+					`Fat: 40.0g`,
+					`Protein: 180.0g`,
 				},
 			},
 			{
 				name: "zero-value",
 				ma:   MacrosAverage{},
 				wantLines: []string{
-					`Average (0 days)`,
-					`Energy: 0.00 (kcal)`,
-					`Carb: 0.00 (g)`,
-					`Fat: 0.00 (g)`,
-					`Protein: 0.00 (g)`,
+					`Empty macro data to calculate the average`,
 				},
 			},
 		}

@@ -96,10 +96,10 @@ if err != nil {
 }
 // userMacros.Average().String()
 // Average (1278 days)
-// Energy: 1700.00 (kcal)
-// Carb: 150.00 (g)
-// Fat: 40.00 (g)
-// Protein: 180.00 (g)
+// Energy: 1700.0kcal
+// Carb: 150.0g
+// Fat: 40.0g
+// Protein: 180.0g
 
 waterIntakes, err := user.Intake(ctx, intake.Water, sinceRegist)
 if err != nil {
@@ -109,7 +109,7 @@ if err != nil {
     log.Fatalf("fetching user water intakes (since regist): %v", err)
 }
 // waterIntakes.Average().String()
-// 320 days: 2223.00 (ml)
+// 320 days: 2223.0ml
 ```
 
 ### Registering new food
