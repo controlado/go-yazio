@@ -31,7 +31,7 @@ func TestBase_String(t *testing.T) {
 		},
 		{
 			name: "miligram",
-			b:    Miligram,
+			b:    Milligram,
 			want: "mg",
 		},
 		{

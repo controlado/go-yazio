@@ -4,7 +4,7 @@ const (
 	Kilocalorie Base = "kcal"
 	Milliliter  Base = "ml"
 	Gram        Base = "g"
-	Miligram    Base = "mg"
+	Milligram   Base = "mg"
 	Microgram   Base = "mcg"
 )
 
