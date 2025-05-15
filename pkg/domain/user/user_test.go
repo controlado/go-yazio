@@ -22,12 +22,12 @@ func TestUser_SinceRegist(t *testing.T) {
 
 	testBlocks := []struct {
 		name string
-		u    *User
+		d    *Data
 		want date.Range
 	}{
 		{
 			name: "valid call",
-			u:    &User{Registration: defaultRegistTime},
+			d:    &Data{Registration: defaultRegistTime},
 			want: date.Range{Start: defaultRegistTime, End: nowResponse},
 		},
 	}
@@ -35,7 +35,7 @@ func TestUser_SinceRegist(t *testing.T) {
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
 			// t.Parallel()
-			got := tb.u.SinceRegist()
+			got := tb.d.SinceRegist()
 			assert.Equal(t, got, tb.want)
 		})
 	}

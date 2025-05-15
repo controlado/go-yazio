@@ -13,6 +13,11 @@ type usingPassword struct {
 	username, password string
 }
 
+// NewPasswordCred creates a new Credentials object
+// for password-based authentication.
+//
+// It takes the username and password as input
+// and returns an [application.Credentials] interface.
 func NewPasswordCred(username, password string) application.Credentials {
 	return &usingPassword{
 		username: username,

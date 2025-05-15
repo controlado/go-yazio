@@ -12,7 +12,7 @@ import (
 
 type User interface {
 	IsExpired() bool
-	Data(context.Context) (user.User, error)
+	Data(context.Context) (user.Data, error)
 	AddFood(context.Context, food.Food, visibility.Food) error
 	Macros(context.Context, date.Range) (intake.MacrosRange, error)
 	Intake(context.Context, intake.Kind, date.Range) (intake.SingleRange, error)

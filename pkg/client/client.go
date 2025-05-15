@@ -10,11 +10,24 @@ type Requester interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
+// Client provides a mechanism to execute HTTP requests.
+//
+// It encapsulates a [Requester] for performing the actual HTTP calls
+// and a base URL that can be used as a default for requests.
+//
+// Instances of Client should be created using [New].
 type Client struct {
 	requester Requester
 	baseURL   string
 }
 
+// New creates and returns a new [Client] instance.
+//
+// It initializes the client with a default requester [http.DefaultClient].
+//
+// The behavior of the new client can be customized by passing one or more
+// [Option] values. These options are applied sequentially to configure fields
+// such as the base URL or a custom requester.
 func New(opts ...Option) *Client {
 	defaultClient := &Client{
 		requester: http.DefaultClient,

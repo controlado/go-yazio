@@ -14,6 +14,14 @@ import (
 	"github.com/controlado/go-yazio/pkg/visibility"
 )
 
+// User represents an authenticated YAZIO account.
+//
+// A value of this type keeps the HTTP client used to talk to the
+// YAZIO mobile API, the current access token and its expiration
+// instant, plus the refresh token needed to renew credentials.
+//
+// The zero value is not functional; obtain a User through the
+// login flow provided in application.API.
 type User struct {
 	client       *client.Client
 	expiresAt    time.Time
@@ -21,7 +29,14 @@ type User struct {
 	refreshToken string
 }
 
-// AddFood implements application.User.
+// AddFood registers a new food (product) using the account.
+//
+// AddFood doesn't entry a new intake. Just regist a new food.
+//
+// On failure the error wraps either:
+//   - [ErrRequestingToYazio]
+//   - [food.ErrAlreadyExists]
+//   - [food.ErrMissingNutrients] f [food.Food] nutrients must have [intake.Energy] [intake.Fat] [intake.Protein] [intake.Carb]
 func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) error {
 	requiredNutrients := []intake.Kind{
 		intake.Energy,
@@ -68,8 +83,16 @@ func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) er
 	return nil
 }
 
-// Data implements application.User.
-func (u *User) Data(ctx context.Context) (d user.User, err error) {
+// Data retrieves the profile metadata for
+// the authenticated user u.
+//
+// The returned d [user.Data] mirrors the public
+// information exposed by the YAZIO API.
+//
+// On failure the error wraps either:
+//   - [ErrRequestingToYazio]
+//   - [ErrDecodingResponse]
+func (u *User) Data(ctx context.Context) (d user.Data, err error) {
 	var (
 		dto GetUserDataDTO
 		req = client.Request{
@@ -99,7 +122,13 @@ func (u *User) Data(ctx context.Context) (d user.User, err error) {
 	return dto.toUserData()
 }
 
-// Intake implements application.User.
+// Intake returns a series of single-nutrient
+// intake values for the given date range.
+//
+// On failure the error wraps either:
+//   - [ErrRequestingToYazio]
+//   - [ErrDecodingResponse]
+//   - Other: generic (DTO related)
 func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.SingleRange, error) {
 	var (
 		dto GetSingleIntakeDTO
@@ -135,7 +164,19 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 	return dto.toRangeSingle()
 }
 
-// Macros implements application.User.
+// Macros returns aggregated values for each
+// day within the provided date range:
+//
+//	[intake.Macros]
+//	  - Energy
+//	  - Carbohydrate
+//	  - Fat
+//	  - Protein
+//
+// On failure the error wraps either:
+//   - [ErrRequestingToYazio]
+//   - [ErrDecodingResponse]
+//   - Other: generic (DTO related)
 func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, error) {
 	var (
 		dto GetMacroIntakeDTO
@@ -170,7 +211,9 @@ func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, er
 	return dto.toRangeMacro()
 }
 
-// IsExpired implements application.User.
+// IsExpired reports whether the access token held
+// by u has already expired relative to the current
+// time.
 func (u *User) IsExpired() bool {
 	timeNow := time.Now()
 	return u.expiresAt.Before(timeNow)

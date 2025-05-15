@@ -24,7 +24,7 @@ func TestUser_Data(t *testing.T) {
 	parsedFakeID, err := uuid.Parse("21a7e919-b3f2-4abc-a6b8-83dddfe311a6")
 	assert.NoError(t, err)
 
-	want := user.User{
+	want := user.Data{
 		ID:        parsedFakeID,
 		Token:     "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
 		FirstName: "João Brito",

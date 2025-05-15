@@ -16,6 +16,8 @@ const (
 	Each       ServingKind = "each"
 )
 
+// Serving describes a specific quantity
+// or measure of a food item.
 type Serving struct {
 	Kind   ServingKind
 	Amount float64

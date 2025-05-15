@@ -1,5 +1,11 @@
 package intake
 
+type Kind string
+
+func (k Kind) String() string {
+	return string(k)
+}
+
 const (
 	Energy            Kind = "energy.energy"
 	Fat               Kind = "nutrient.fat"
@@ -56,9 +62,3 @@ const (
 	MineralZinc       Kind = "mineral.zinc"
 	MineralVanadium   Kind = "mineral.vanadium"
 )
-
-type Kind string
-
-func (k Kind) String() string {
-	return string(k)
-}

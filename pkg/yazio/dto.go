@@ -55,7 +55,7 @@ type GetUserDataDTO struct {
 	BirthDate    string `json:"date_of_birth"`
 }
 
-func (d *GetUserDataDTO) toUserData() (u user.User, err error) {
+func (d *GetUserDataDTO) toUserData() (u user.Data, err error) {
 	parsedID, err := uuid.Parse(d.ID)
 	if err != nil {
 		return u, fmt.Errorf("parsing user uuid (%q): %w", d.ID, err)
@@ -71,7 +71,7 @@ func (d *GetUserDataDTO) toUserData() (u user.User, err error) {
 		return u, fmt.Errorf("parsing user bith date (%q): %w", d.BirthDate, err)
 	}
 
-	u = user.User{
+	u = user.Data{
 		ID:        parsedID,
 		Token:     d.Token,
 		FirstName: d.FirstName,
