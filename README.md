@@ -30,7 +30,7 @@ const (
 
 var (
     ctx = context.Background()
-    c   = client.New(
+    c   = client.New( // go-yazio/pkg/client
         client.WithBaseURL(yazio.BaseURL),
     )
 )
@@ -50,6 +50,24 @@ if err != nil {
 }
 ```
 
+### Refresh session
+
+Can be used after use [`Login`](#auth)
+
+```go
+userToken := user.Token()
+// userToken.String()
+// Token(Expired)
+
+if userToken.IsExpired() {
+    if err := api.Refresh(ctx, user); err != nil {
+        // yazio.ErrRequestingToYazio
+        // yazio.ErrDecodingResponse
+        log.Fatalf("refreshing user token: %v", err)
+    }
+}
+```
+
 ### Get user-data
 
 Can be used after use [`Login`](#auth)
@@ -57,6 +75,7 @@ Can be used after use [`Login`](#auth)
 ```go
 userData, err := user.Data(ctx)
 if err != nil {
+    // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
     // yazio.ErrDecodingResponse
     log.Fatalf("fetching user data from api: %v", err)
@@ -70,6 +89,7 @@ sinceRegist := userData.SinceRegist()
 
 userMacros, err := user.Macros(ctx, sinceRegist)
 if err != nil {
+    // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
     // yazio.ErrDecodingResponse
     log.Fatalf("fetching user macros intakes (since regist): %v", err)
@@ -83,6 +103,7 @@ if err != nil {
 
 sugarIntakes, err := user.Intake(ctx, intake.Sugar, sinceRegist)
 if err != nil {
+    // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
     // yazio.ErrDecodingResponse
     log.Fatalf("fetching user sugar intakes (since regist): %v", err)
@@ -113,6 +134,7 @@ if err != nil { // food.ErrInvalidName
 }
 
 if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
+    // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
     // food.ErrMissingNutrients
     // food.ErrAlreadyExists

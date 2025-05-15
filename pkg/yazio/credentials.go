@@ -7,7 +7,27 @@ type grantType string
 const (
 	passwordGrant grantType = "password"
 	googleGrant   grantType = "sign_in_with_google"
+	refreshGrant  grantType = "refresh_token"
 )
+
+type refreshToken struct {
+	refreshTokenValue string
+}
+
+func newRefreshCred(tk application.Token) application.Credentials {
+	return &refreshToken{
+		refreshTokenValue: tk.Refresh(),
+	}
+}
+
+func (rt *refreshToken) Body() map[string]any {
+	return map[string]any{
+		"grant_type":    refreshGrant,
+		"refresh_token": rt.refreshTokenValue,
+		"client_id":     defaultClientID,
+		"client_secret": defaultSecret,
+	}
+}
 
 type usingPassword struct {
 	username, password string

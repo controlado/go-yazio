@@ -1,5 +1,27 @@
 package yazio
 
+import (
+	"github.com/controlado/go-yazio/internal/application"
+	"github.com/controlado/go-yazio/pkg/client"
+)
+
+func defaultHeaders(tk application.Token) client.Payload {
+	headers := client.Payload{
+		`accept`:          `*/*`,
+		`accept-charset`:  `UTF-8`,
+		`connection`:      `Keep-Alive`,
+		`host`:            `yzapi.yazio.com`,
+		`accept-encoding`: `application/json`,
+		`user-agent`:      `YAZIO/12.31.0 (com.yazio.android; build:411052340; Android 34) Ktor`,
+	}
+
+	if tk != nil {
+		headers[`authorization`] = tk.Bearer()
+	}
+
+	return headers
+}
+
 // Public contant
 const (
 	// Base URL that YAZIO currently uses.

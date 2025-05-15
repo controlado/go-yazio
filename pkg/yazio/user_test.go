@@ -9,6 +9,7 @@ import (
 
 	"github.com/controlado/go-yazio/internal/testutil/assert"
 	"github.com/controlado/go-yazio/internal/testutil/server"
+	"github.com/controlado/go-yazio/internal/testutil/times"
 	"github.com/controlado/go-yazio/pkg/client"
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
@@ -21,29 +22,29 @@ import (
 func TestUser_Data(t *testing.T) {
 	t.Parallel()
 
-	parsedFakeID, err := uuid.Parse("21a7e919-b3f2-4abc-a6b8-83dddfe311a6")
-	assert.NoError(t, err)
-
-	want := user.Data{
-		ID:        parsedFakeID,
-		Token:     "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
-		FirstName: "João Brito",
-		LastName:  "da Silva",
-		IconURL:   "https://images.yazio-cdn.com/process/plain/app/profile/user/2025/d297247d-51d4-4e04-9e87-c99fdf693585.jpg",
-		Email: user.Email{
-			Value:       "joaodasilva@gmail.com",
-			IsConfirmed: true,
-		},
-		Registration: time.Date(2023, 02, 06, 21, 22, 46, 0, time.UTC),
-		Birth:        time.Date(2005, 8, 26, 0, 0, 0, 0, time.UTC),
-	}
+	var (
+		fakeID = uuid.New()
+		want   = user.Data{
+			ID:        fakeID,
+			Token:     "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
+			FirstName: "João Brito",
+			LastName:  "da Silva",
+			IconURL:   "https://images.yazio-cdn.com/process/plain/app/profile/user/2025/d297247d-51d4-4e04-9e87-c99fdf693585.jpg",
+			Email: user.Email{
+				Value:       "joaodasilva@gmail.com",
+				IsConfirmed: true,
+			},
+			Registration: time.Date(2023, 02, 06, 21, 22, 46, 0, time.UTC),
+			Birth:        time.Date(2005, 8, 26, 0, 0, 0, 0, time.UTC),
+		}
+	)
 
 	handler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, http.MethodGet)
 		assert.Equal(t, r.URL.Path, userDataEndpoint)
 
 		respBody := GetUserDataDTO{
-			ID:           parsedFakeID.String(),
+			ID:           fakeID.String(),
 			Token:        want.Token,
 			FirstName:    want.FirstName,
 			LastName:     want.LastName,
@@ -65,36 +66,18 @@ func TestUser_Data(t *testing.T) {
 			client.WithBaseURL(srv.URL),
 		)
 		u = User{
-			client:       c,
-			expiresAt:    time.Now().Add(time.Hour),
-			accessToken:  "302af606a79142cb2ab862bf9488cfd4",
-			refreshToken: "302af606a79142cb2ab862bf9488cfd4",
+			client: c,
+			token: &Token{
+				expiresAt: times.Future(),
+				access:    uuid.NewString(),
+				refresh:   uuid.NewString(),
+			},
 		}
 	)
 
 	userData, err := u.Data(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, want, userData)
-}
-
-func TestUser_IsExpired(t *testing.T) {
-	t.Parallel()
-
-	var (
-		c = client.New(
-			client.WithBaseURL(BaseURL),
-		)
-		u = User{
-			client:       c,
-			expiresAt:    time.Now().Add(-time.Hour),
-			accessToken:  "302af606a79142cb2ab862bf9488cfd4",
-			refreshToken: "302af606a79142cb2ab862bf9488cfd4",
-		}
-	)
-
-	want := true
-	got := u.IsExpired()
-	assert.Equal(t, got, want)
 }
 
 func TestUser_Macros(t *testing.T) {
@@ -160,10 +143,12 @@ func TestUser_Macros(t *testing.T) {
 			client.WithBaseURL(srv.URL),
 		)
 		u = User{
-			client:       c,
-			expiresAt:    time.Now().Add(time.Hour),
-			accessToken:  "302af606a79142cb2ab862bf9488cfd4",
-			refreshToken: "302af606a79142cb2ab862bf9488cfd4",
+			client: c,
+			token: &Token{
+				expiresAt: times.Future(),
+				access:    uuid.NewString(),
+				refresh:   uuid.NewString(),
+			},
 		}
 	)
 
@@ -247,10 +232,12 @@ func TestUser_Intake(t *testing.T) {
 				srv = server.New(t, tb.serverHandler)
 				c   = client.New(client.WithBaseURL(srv.URL))
 				u   = User{
-					client:       c,
-					expiresAt:    time.Now().Add(time.Hour),
-					accessToken:  "302af606a79142cb2ab862bf9488cfd4",
-					refreshToken: "302af606a79142cb2ab862bf9488cfd4",
+					client: c,
+					token: &Token{
+						expiresAt: times.Future(),
+						access:    uuid.NewString(),
+						refresh:   uuid.NewString(),
+					},
 				}
 			)
 
@@ -348,10 +335,12 @@ func TestUser_AddFood(t *testing.T) {
 				srv = server.New(t, handler)
 				c   = client.New(client.WithBaseURL(srv.URL))
 				u   = &User{
-					client:       c,
-					expiresAt:    time.Now().Add(time.Hour),
-					accessToken:  "302af606a79142cb2ab862bf9488cfd4",
-					refreshToken: "302af606a79142cb2ab862bf9488cfd4",
+					client: c,
+					token: &Token{
+						expiresAt: times.Future(),
+						access:    uuid.NewString(),
+						refresh:   uuid.NewString(),
+					},
 				}
 			)
 

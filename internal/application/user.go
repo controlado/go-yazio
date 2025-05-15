@@ -11,7 +11,7 @@ import (
 )
 
 type User interface {
-	IsExpired() bool
+	Token() Token
 	Data(context.Context) (user.Data, error)
 	AddFood(context.Context, food.Food, visibility.Food) error
 	Macros(context.Context, date.Range) (intake.MacrosRange, error)

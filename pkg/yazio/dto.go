@@ -33,10 +33,12 @@ func (d *LoginDTO) toUser(c *client.Client) (application.User, error) {
 		timeNow   = time.Now()
 		expiresAt = time.Duration(d.ExpiresInSec) * time.Second
 		user      = &User{
-			client:       c,
-			expiresAt:    timeNow.Add(expiresAt),
-			accessToken:  d.AccessToken,
-			refreshToken: d.RefreshToken,
+			client: c,
+			token: &Token{
+				expiresAt: timeNow.Add(expiresAt),
+				access:    d.AccessToken,
+				refresh:   d.RefreshToken,
+			},
 		}
 	)
 

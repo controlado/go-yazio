@@ -32,6 +32,24 @@ func New(c *client.Client) (application.API, error) {
 	return a, nil
 }
 
+func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
+	currentToken := currentUser.Token()
+	if !currentToken.IsExpired() { // double-checking
+		return nil
+	}
+
+	cred := newRefreshCred(currentToken)
+	newUser, err := a.Login(ctx, cred)
+	if err != nil {
+		return fmt.Errorf("refreshing token: %w", err)
+	}
+
+	newToken := newUser.Token()
+	currentToken.Update(newToken)
+
+	return nil
+}
+
 // Login implements the [application.API] interface.
 // It attempts to log in a user with the provided cred.
 //
@@ -49,6 +67,7 @@ func (a *API) Login(ctx context.Context, cred application.Credentials) (applicat
 		req = client.Request{
 			Method:   http.MethodPost,
 			Endpoint: loginEndpoint,
+			Headers:  defaultHeaders(nil),
 			Body:     cred.Body(),
 		}
 	)
@@ -57,7 +76,7 @@ func (a *API) Login(ctx context.Context, cred application.Credentials) (applicat
 	if err != nil {
 		if resp.Response != nil {
 			switch resp.StatusCode {
-			case 400:
+			case http.StatusBadRequest:
 				return nil, ErrInvalidCredentials
 			}
 		}

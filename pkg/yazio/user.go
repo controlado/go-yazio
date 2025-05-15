@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/controlado/go-yazio/internal/application"
 	"github.com/controlado/go-yazio/pkg/client"
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
@@ -23,10 +23,13 @@ import (
 // The zero value is not functional; obtain a User through the
 // login flow provided in application.API.
 type User struct {
-	client       *client.Client
-	expiresAt    time.Time
-	accessToken  string
-	refreshToken string
+	client *client.Client
+	token  application.Token
+}
+
+// Token returns the [application.Token] held by u.
+func (u *User) Token() application.Token {
+	return u.token
 }
 
 // AddFood registers a new food (product) using the account.
@@ -34,15 +37,18 @@ type User struct {
 // AddFood doesn't entry a new intake. Just regist a new food.
 //
 // On failure the error wraps either:
+//   - [ErrExpiredToken]
 //   - [ErrRequestingToYazio]
 //   - [food.ErrAlreadyExists]
 //   - [food.ErrMissingNutrients] f [food.Food] nutrients must have [intake.Energy] [intake.Fat] [intake.Protein] [intake.Carb]
 func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) error {
+	if u.token.IsExpired() {
+		return ErrExpiredToken
+	}
+
 	requiredNutrients := []intake.Kind{
-		intake.Energy,
-		intake.Fat,
-		intake.Protein,
-		intake.Carb,
+		intake.Energy, intake.Fat,
+		intake.Protein, intake.Carb,
 	}
 
 	for _, k := range requiredNutrients {
@@ -56,15 +62,7 @@ func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) er
 			Method:   http.MethodPost,
 			Endpoint: addFoodEndpoint,
 			Body:     newAddFoodBody(f, vis),
-			Headers: client.Payload{
-				`accept`:          `*/*`,
-				`accept-charset`:  `UTF-8`,
-				`accept-encoding`: `application/json`,
-				`connection`:      `Keep-Alive`,
-				`host`:            `yzapi.yazio.com`,
-				`authorization`:   fmt.Sprintf("Bearer %s", u.accessToken),
-				`user-agent`:      `YAZIO/12.31.0 (com.yazio.android; build:411052340; Android 34) Ktor`,
-			},
+			Headers:  defaultHeaders(u.token),
 		}
 	)
 
@@ -73,6 +71,8 @@ func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) er
 			switch resp.StatusCode {
 			case http.StatusBadRequest:
 				return food.ErrMissingNutrients
+			case http.StatusUnauthorized:
+				return ErrExpiredToken
 			case http.StatusConflict:
 				return food.ErrAlreadyExists
 			}
@@ -90,28 +90,31 @@ func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) er
 // information exposed by the YAZIO API.
 //
 // On failure the error wraps either:
+//   - [ErrExpiredToken]
 //   - [ErrRequestingToYazio]
 //   - [ErrDecodingResponse]
 func (u *User) Data(ctx context.Context) (d user.Data, err error) {
+	if u.token.IsExpired() {
+		return d, ErrExpiredToken
+	}
+
 	var (
 		dto GetUserDataDTO
 		req = client.Request{
 			Method:   http.MethodGet,
 			Endpoint: userDataEndpoint,
-			Headers: client.Payload{
-				`accept`:          `*/*`,
-				`accept-charset`:  `UTF-8`,
-				`accept-encoding`: `application/json`,
-				`connection`:      `Keep-Alive`,
-				`host`:            `yzapi.yazio.com`,
-				`authorization`:   fmt.Sprintf("Bearer %s", u.accessToken),
-				`user-agent`:      `YAZIO/12.31.0 (com.yazio.android; build:411052340; Android 34) Ktor`,
-			},
+			Headers:  defaultHeaders(u.token),
 		}
 	)
 
 	resp, err := u.client.Request(ctx, req)
 	if err != nil {
+		if resp.Response != nil {
+			switch resp.StatusCode {
+			case http.StatusUnauthorized:
+				return d, ErrExpiredToken
+			}
+		}
 		return d, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
 	}
 
@@ -126,24 +129,21 @@ func (u *User) Data(ctx context.Context) (d user.Data, err error) {
 // intake values for the given date range.
 //
 // On failure the error wraps either:
+//   - [ErrExpiredToken]
 //   - [ErrRequestingToYazio]
 //   - [ErrDecodingResponse]
 //   - Other: generic (DTO related)
 func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.SingleRange, error) {
+	if u.token.IsExpired() {
+		return nil, ErrExpiredToken
+	}
+
 	var (
 		dto GetSingleIntakeDTO
 		req = client.Request{
 			Method:   http.MethodGet,
 			Endpoint: singleIntakesEndpoint,
-			Headers: client.Payload{
-				`accept`:          `*/*`,
-				`accept-charset`:  `UTF-8`,
-				`accept-encoding`: `application/json`,
-				`connection`:      `Keep-Alive`,
-				`host`:            `yzapi.yazio.com`,
-				`authorization`:   fmt.Sprintf("Bearer %s", u.accessToken),
-				`user-agent`:      `YAZIO/12.31.0 (com.yazio.android; build:411052340; Android 34) Ktor`,
-			},
+			Headers:  defaultHeaders(u.token),
 			QueryParams: client.Payload{
 				"start":    r.Start.Format(layoutISO),
 				"end":      r.End.Format(layoutISO),
@@ -154,6 +154,12 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 
 	resp, err := u.client.Request(ctx, req)
 	if err != nil {
+		if resp.Response != nil {
+			switch resp.StatusCode {
+			case http.StatusUnauthorized:
+				return nil, ErrExpiredToken
+			}
+		}
 		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
 	}
 
@@ -174,24 +180,21 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 //	  - Protein
 //
 // On failure the error wraps either:
+//   - [ErrExpiredToken]
 //   - [ErrRequestingToYazio]
 //   - [ErrDecodingResponse]
 //   - Other: generic (DTO related)
 func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, error) {
+	if u.token.IsExpired() {
+		return nil, ErrExpiredToken
+	}
+
 	var (
 		dto GetMacroIntakeDTO
 		req = client.Request{
 			Method:   http.MethodGet,
 			Endpoint: macrosIntakesEndpoint,
-			Headers: client.Payload{
-				`accept`:          `*/*`,
-				`accept-charset`:  `UTF-8`,
-				`accept-encoding`: `application/json`,
-				`connection`:      `Keep-Alive`,
-				`host`:            `yzapi.yazio.com`,
-				`authorization`:   fmt.Sprintf("Bearer %s", u.accessToken),
-				`user-agent`:      `YAZIO/12.31.0 (com.yazio.android; build:411052340; Android 34) Ktor`,
-			},
+			Headers:  defaultHeaders(u.token),
 			QueryParams: client.Payload{
 				"start": r.Start.Format(layoutISO),
 				"end":   r.End.Format(layoutISO),
@@ -201,6 +204,12 @@ func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, er
 
 	resp, err := u.client.Request(ctx, req)
 	if err != nil {
+		if resp.Response != nil {
+			switch resp.StatusCode {
+			case http.StatusUnauthorized:
+				return nil, ErrExpiredToken
+			}
+		}
 		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
 	}
 
@@ -209,12 +218,4 @@ func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, er
 	}
 
 	return dto.toRangeMacro()
-}
-
-// IsExpired reports whether the access token held
-// by u has already expired relative to the current
-// time.
-func (u *User) IsExpired() bool {
-	timeNow := time.Now()
-	return u.expiresAt.Before(timeNow)
 }
