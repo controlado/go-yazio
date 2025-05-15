@@ -15,7 +15,7 @@ Unofficial Go SDK for the YAZIO mobile API
 ## Installation
 
 ```bash
-go get github.com/controlado/yazio
+go get github.com/controlado/go-yazio
 ```
 
 ## Quick Start
