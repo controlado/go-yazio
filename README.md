@@ -2,11 +2,11 @@
 
 Unofficial Go SDK for the YAZIO mobile API
 
-[![mit-badge](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![report-badge](https://goreportcard.com/badge/github.com/controlado/go-yazio)](https://goreportcard.com/report/github.com/controlado/go-yazio)
+[![mit-badge](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)<br>
 [![tests-badge](https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg)](https://github.com/controlado/go-yazio/actions/workflows/test.yml)
-[![pkg-go-badge](https://pkg.go.dev/badge/github.com/controlado/go-yazio.svg)](https://pkg.go.dev/github.com/controlado/go-yazio)
-[![wakatime-badge](https://wakatime.com/badge/github/controlado/go-yazio.svg)](https://wakatime.com/badge/github/controlado/go-yazio)
+[![pkg-go-badge](https://img.shields.io/static/v1?logo=go&label=Documentation&message=go-yazio&color=0476b7&style=default)](https://pkg.go.dev/github.com/controlado/go-yazio)<br>
+[![report-badge](https://goreportcard.com/badge/github.com/controlado/go-yazio?style=default)](https://goreportcard.com/report/github.com/controlado/go-yazio)
+[![wakatime-badge](https://wakatime.com/badge/github/controlado/go-yazio.svg?style=default)](https://wakatime.com/badge/github/controlado/go-yazio)
 
 ## Status
 
