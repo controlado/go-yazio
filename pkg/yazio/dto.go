@@ -123,7 +123,7 @@ func (d GetMacroIntakeDTO) toRangeMacro() (mr intake.MacrosRange, err error) {
 
 type GetSingleIntakeDTO map[string]float64
 
-func (d GetSingleIntakeDTO) toRangeSingle() (sr intake.SingleRange, err error) {
+func (d GetSingleIntakeDTO) toRangeSingle(k intake.Kind) (sr intake.SingleRange, err error) {
 	for date, value := range d {
 		parsedDate, err := time.Parse(layoutISO, date)
 		if err != nil {
@@ -131,6 +131,7 @@ func (d GetSingleIntakeDTO) toRangeSingle() (sr intake.SingleRange, err error) {
 		}
 
 		s := intake.Single{
+			Kind:  k,
 			Date:  parsedDate,
 			Value: value,
 		}
@@ -159,8 +160,8 @@ func mapNutrients(nuts map[intake.Kind]float64) map[string]float64 {
 	}
 
 	for kind, value := range nuts {
-		nutrient := kind.String()
-		out[nutrient] = value
+		nutrientID := kind.ID()
+		out[nutrientID] = value
 	}
 
 	return out

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/controlado/go-yazio/pkg/domain/intake"
+	"github.com/controlado/go-yazio/pkg/domain/unit"
 	"github.com/google/uuid"
 )
 
@@ -36,7 +37,7 @@ type (
 	Food struct {
 		ID        uuid.UUID // ID is the unique identifier for the food item.
 		Name      string    // Name is the descriptive name of the food item.
-		BaseUnit  BaseUnit  // BaseUnit specifies the food fundamental unit of measurement.
+		BaseUnit  unit.Base // BaseUnit specifies the food fundamental unit of measurement.
 		Category  Category  // Category classifies the food item; [Meat] [Miscellaneous]...
 		Nutrients Nutrients // Nutrients holds the nutritional composition of the food.
 		Servings  []Serving // Servings lists the food predefined serving sizes; [Bottle]...
@@ -64,7 +65,7 @@ func New(name string, cat Category, nut Nutrients, opts ...Option) (f Food, err 
 	f = Food{
 		ID:        uuid.New(),
 		Name:      name,
-		BaseUnit:  Grams,
+		BaseUnit:  unit.Gram,
 		Category:  cat,
 		Nutrients: nut,
 		Servings:  []Serving{},

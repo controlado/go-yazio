@@ -95,21 +95,21 @@ if err != nil {
     log.Fatalf("fetching user macros intakes (since regist): %v", err)
 }
 // userMacros.Average().String()
-// Average 183 days
-// Kcal: 1859.953
-// Carb: 120.274
-// Fat: 50.872
-// Protein: 167.89
+// Average (1278 days)
+// Energy: 1700.00 (kcal)
+// Carb: 150.00 (g)
+// Fat: 40.00 (g)
+// Protein: 180.00 (g)
 
-sugarIntakes, err := user.Intake(ctx, intake.Sugar, sinceRegist)
+waterIntakes, err := user.Intake(ctx, intake.Water, sinceRegist)
 if err != nil {
     // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
     // yazio.ErrDecodingResponse
-    log.Fatalf("fetching user sugar intakes (since regist): %v", err)
+    log.Fatalf("fetching user water intakes (since regist): %v", err)
 }
-// sugarIntakes.Average().String()
-// 39 days: 37.99
+// waterIntakes.Average().String()
+// 320 days: 2223.00 (ml)
 ```
 
 ### Registering new food

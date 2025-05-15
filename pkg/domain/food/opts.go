@@ -1,10 +1,12 @@
 package food
 
+import "github.com/controlado/go-yazio/pkg/domain/unit"
+
 type Option func(f *Food)
 
-func WithBaseUnit(bu BaseUnit) Option {
+func WithBaseUnit(b unit.Base) Option {
 	return func(f *Food) {
-		f.BaseUnit = bu
+		f.BaseUnit = b
 	}
 }
 

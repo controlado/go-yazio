@@ -14,6 +14,7 @@ import (
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"
+	"github.com/controlado/go-yazio/pkg/domain/unit"
 	"github.com/controlado/go-yazio/pkg/domain/user"
 	"github.com/controlado/go-yazio/pkg/visibility"
 	"github.com/google/uuid"
@@ -196,8 +197,8 @@ func TestUser_Intake(t *testing.T) {
 				},
 				wantErr: false,
 				want: intake.SingleRange{
-					{Date: startDate, Value: 89.83},
-					{Date: endDate, Value: 50.38},
+					{Kind: intake.Sugar, Date: startDate, Value: 89.83},
+					{Kind: intake.Sugar, Date: endDate, Value: 50.38},
 				},
 				serverHandler: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
 					assert.Equal(t, r.URL.Path, singleIntakesEndpoint)
@@ -210,8 +211,8 @@ func TestUser_Intake(t *testing.T) {
 						queryIntakeKind = q.Get("nutrient")
 					)
 
-					if intake.Kind(queryIntakeKind) == "" {
-						t.Fatalf("want intake kind, got blank")
+					if queryIntakeKind != intake.Sugar.ID() {
+						t.Fatalf("want sugar intake id, got %q", queryIntakeKind)
 					}
 
 					respBody := GetSingleIntakeDTO{
@@ -276,7 +277,7 @@ func TestUser_AddFood(t *testing.T) {
 		validFood = food.Food{
 			ID:       uuid.New(),
 			Name:     "banana",
-			BaseUnit: food.Grams,
+			BaseUnit: unit.Gram,
 			Category: food.Miscellaneous,
 			Nutrients: food.Nutrients{
 				intake.Energy:  10,

@@ -6,6 +6,7 @@ import (
 )
 
 type Single struct {
+	Kind  Kind
 	Date  time.Time
 	Value float64
 }
@@ -14,6 +15,7 @@ type SingleRange []Single
 
 func (sr SingleRange) Average() SingleAverage {
 	var (
+		kindSample  Kind
 		totalValues float64
 		rangeLength = len(sr)
 	)
@@ -22,21 +24,30 @@ func (sr SingleRange) Average() SingleAverage {
 		return SingleAverage{}
 	}
 
-	for _, intake := range sr {
+	for i, intake := range sr {
+		if i == 0 {
+			kindSample = intake.Kind
+		}
 		totalValues += intake.Value
 	}
 
 	return SingleAverage{
+		Kind:       kindSample,
 		DaysLength: rangeLength,
 		Average:    totalValues / float64(rangeLength),
 	}
 }
 
 type SingleAverage struct {
+	Kind       Kind
 	DaysLength int
 	Average    float64
 }
 
 func (sa SingleAverage) String() string {
-	return fmt.Sprintf("%d days: %.2f", sa.DaysLength, sa.Average)
+	return fmt.Sprintf("%d days: %.2f (%s)",
+		sa.DaysLength,
+		sa.Average,
+		sa.Kind.baseUnit,
+	)
 }

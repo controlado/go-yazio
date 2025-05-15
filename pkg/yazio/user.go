@@ -147,7 +147,7 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 			QueryParams: client.Payload{
 				"start":    r.Start.Format(layoutISO),
 				"end":      r.End.Format(layoutISO),
-				"nutrient": k.String(),
+				"nutrient": k.ID(),
 			},
 		}
 	)
@@ -167,7 +167,7 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 		return nil, fmt.Errorf("%s: %w", ErrDecodingResponse, err)
 	}
 
-	return dto.toRangeSingle()
+	return dto.toRangeSingle(k)
 }
 
 // Macros returns aggregated values for each
