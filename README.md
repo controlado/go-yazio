@@ -116,15 +116,15 @@ if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
 ## Features
 
 * Login with password
-* Register food to user
+* Register food to account
 * Retrieve user profile & nutrition stats
 * Zero external deps beyond the Go standard library
 * Context/timeout aware
 
-## TODO
+### To-do
 
-* Food intake
-* Get registered food
+* Food intake (entry)
+* Get registered food using ID
 * Automatic retry with exponential back‑off
 
 ## Legal Notice
@@ -136,8 +136,9 @@ if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or pull request.  
-By contributing, you agree to release your work under the MIT License.
+Contributions are welcome!  
+Please open an issue or pull request.  
+By contributing, you agree to release your work under the license.
 
 ## License
 
