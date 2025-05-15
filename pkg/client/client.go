@@ -19,11 +19,7 @@ func New(opts ...Option) *Client {
 	defaultClient := &Client{
 		requester: http.DefaultClient,
 	}
-
-	for _, o := range opts {
-		o(defaultClient)
-	}
-
+	defaultClient.apply(opts...)
 	return defaultClient
 }
 
@@ -47,4 +43,10 @@ func (c *Client) Request(ctx context.Context, req Request) (resp Response, err e
 	}
 
 	return
+}
+
+func (c *Client) apply(opts ...Option) {
+	for _, o := range opts {
+		o(c)
+	}
 }

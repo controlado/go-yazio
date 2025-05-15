@@ -7,10 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/internal/domain"
 	"github.com/controlado/go-yazio/internal/testutil/assert"
 	"github.com/controlado/go-yazio/internal/testutil/server"
 	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/pkg/domain/date"
+	"github.com/controlado/go-yazio/pkg/domain/food"
+	"github.com/controlado/go-yazio/pkg/domain/intake"
+	"github.com/controlado/go-yazio/pkg/domain/user"
+	"github.com/controlado/go-yazio/pkg/visibility"
 	"github.com/google/uuid"
 )
 
@@ -20,13 +24,13 @@ func TestUser_Data(t *testing.T) {
 	parsedFakeID, err := uuid.Parse("21a7e919-b3f2-4abc-a6b8-83dddfe311a6")
 	assert.NoError(t, err)
 
-	want := domain.User{
+	want := user.User{
 		ID:        parsedFakeID,
 		Token:     "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
 		FirstName: "João Brito",
 		LastName:  "da Silva",
 		IconURL:   "https://images.yazio-cdn.com/process/plain/app/profile/user/2025/d297247d-51d4-4e04-9e87-c99fdf693585.jpg",
-		Email: domain.Email{
+		Email: user.Email{
 			Value:       "joaodasilva@gmail.com",
 			IsConfirmed: true,
 		},
@@ -78,7 +82,7 @@ func TestUser_IsExpired(t *testing.T) {
 
 	var (
 		c = client.New(
-			client.WithBaseURL(DefaultBaseURL),
+			client.WithBaseURL(BaseURL),
 		)
 		u = User{
 			client:       c,
@@ -102,7 +106,7 @@ func TestUser_Macros(t *testing.T) {
 	endDate, err := time.Parse(layoutISO, "2025-04-13")
 	assert.NoError(t, err)
 
-	want := domain.MacrosRange{
+	want := intake.MacrosRange{
 		{
 			Date:    startDate,
 			Energy:  1288.68,
@@ -121,7 +125,7 @@ func TestUser_Macros(t *testing.T) {
 
 	handler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, r.Method, http.MethodGet)
-		assert.Equal(t, r.URL.Path, macrosEndpoint)
+		assert.Equal(t, r.URL.Path, macrosIntakesEndpoint)
 
 		var (
 			q              = r.URL.Query()
@@ -163,7 +167,7 @@ func TestUser_Macros(t *testing.T) {
 		}
 	)
 
-	macroRange := domain.DateRange{
+	macroRange := date.Range{
 		Start: startDate,
 		End:   endDate,
 	}
@@ -183,8 +187,8 @@ func TestUser_Intake(t *testing.T) {
 
 	type args struct {
 		ctx       context.Context
-		kind      domain.IntakeKind
-		dateRange domain.DateRange
+		kind      intake.Kind
+		dateRange date.Range
 	}
 
 	var (
@@ -193,26 +197,25 @@ func TestUser_Intake(t *testing.T) {
 			name          string
 			args          args
 			wantErr       bool
-			want          domain.SingleRange
+			want          intake.SingleRange
 			serverHandler server.Handler
 		}{
 			{
 				name: "valid args",
 				args: args{
 					ctx:  ctx,
-					kind: domain.Sugar,
-					dateRange: domain.DateRange{
-						Start: startDate,
-						End:   endDate,
+					kind: intake.Sugar,
+					dateRange: date.Range{
+						Start: startDate, End: endDate,
 					},
 				},
 				wantErr: false,
-				want: domain.SingleRange{
+				want: intake.SingleRange{
 					{Date: startDate, Value: 89.83},
 					{Date: endDate, Value: 50.38},
 				},
 				serverHandler: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					assert.Equal(t, r.URL.Path, intakeEndpoint)
+					assert.Equal(t, r.URL.Path, singleIntakesEndpoint)
 					assert.Equal(t, r.Method, http.MethodGet)
 
 					var (
@@ -222,13 +225,8 @@ func TestUser_Intake(t *testing.T) {
 						queryIntakeKind = q.Get("nutrient")
 					)
 
-					switch domain.IntakeKind(queryIntakeKind) {
-					case domain.Salt:
-					case domain.Sugar:
-					case domain.Fiber:
-					case domain.Water:
-					default:
-						t.Fatalf("unexpected kind %q", queryIntakeKind)
+					if intake.Kind(queryIntakeKind) == "" {
+						t.Fatalf("want intake kind, got blank")
 					}
 
 					respBody := GetSingleIntakeDTO{
@@ -256,9 +254,115 @@ func TestUser_Intake(t *testing.T) {
 				}
 			)
 
-			rm, err := u.Intake(tb.args.ctx, tb.args.kind, tb.args.dateRange)
+			rm, err := u.Intake(
+				tb.args.ctx,
+				tb.args.kind,
+				tb.args.dateRange,
+			)
 			assert.NoError(t, err)
 			assert.DeepEqual(t, rm, tb.want)
+		})
+	}
+}
+
+func TestUser_AddFood(t *testing.T) {
+	t.Parallel()
+
+	defaultHandler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.URL.Path, addFoodEndpoint)
+		assert.Equal(t, r.Method, http.MethodPost)
+
+		headers := client.Payload{
+			`Cache-Control`: ` no-cache, private`,
+			`Connection`:    ` keep-alive`,
+			`Date`:          ` Wed, 14 May 2025 19:03:19 GMT`,
+			`Server`:        ` nginx`,
+		}
+		responseHeaders := w.Header()
+		headers.Set(responseHeaders)
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	var (
+		ctx       = context.Background()
+		validFood = food.Food{
+			ID:       uuid.New(),
+			Name:     "banana",
+			BaseUnit: food.Grams,
+			Category: food.Miscellaneous,
+			Nutrients: food.Nutrients{
+				intake.Energy:  10,
+				intake.Fat:     10,
+				intake.Protein: 10,
+				intake.Carb:    10,
+			},
+			Servings: []food.Serving{
+				{
+					Kind:   food.Piece,
+					Amount: 1,
+				},
+			},
+		}
+		testBlocks = []struct {
+			name         string
+			wantErr      bool
+			food         food.Food
+			serverHandle server.Handler
+		}{
+			{name: "valid food", food: validFood},
+			{
+				name:    "food missing nutrients",
+				wantErr: true,
+				food: func() food.Food {
+					invalidFood := validFood
+					invalidFood.Nutrients = food.Nutrients{}
+					return invalidFood
+				}(),
+			},
+			{
+				name: "server respond (StatusBadRequest)", wantErr: true, food: validFood,
+				serverHandle: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusBadRequest)
+				},
+			},
+			{
+				name: "server respond (StatusConflict)", wantErr: true, food: validFood,
+				serverHandle: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusConflict)
+				},
+			},
+		}
+	)
+
+	for _, tb := range testBlocks {
+		t.Run(tb.name, func(t *testing.T) {
+			t.Parallel()
+
+			handler := defaultHandler
+			if tb.serverHandle != nil {
+				handler = tb.serverHandle
+			}
+
+			var (
+				srv = server.New(t, handler)
+				c   = client.New(client.WithBaseURL(srv.URL))
+				u   = &User{
+					client:       c,
+					expiresAt:    time.Now().Add(time.Hour),
+					accessToken:  "302af606a79142cb2ab862bf9488cfd4",
+					refreshToken: "302af606a79142cb2ab862bf9488cfd4",
+				}
+			)
+
+			err := u.AddFood(
+				ctx,
+				tb.food,
+				visibility.PrivateFood,
+			)
+			if (err != nil) != tb.wantErr {
+				t.Fatalf("want (%v), got err: %v", tb.wantErr, err)
+			}
 		})
 	}
 }

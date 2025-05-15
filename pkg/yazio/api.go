@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/controlado/go-yazio/internal/application"
-	"github.com/controlado/go-yazio/internal/domain"
 	"github.com/controlado/go-yazio/pkg/client"
 )
 
@@ -27,13 +26,13 @@ func New(c *client.Client) (application.API, error) {
 }
 
 // Login implements application.API.
-func (a *API) Login(ctx context.Context, c application.Credentials) (application.User, error) {
+func (a *API) Login(ctx context.Context, cred application.Credentials) (application.User, error) {
 	var (
 		dto LoginDTO
 		req = client.Request{
 			Method:   http.MethodPost,
 			Endpoint: loginEndpoint,
-			Body:     c.Body(),
+			Body:     cred.Body(),
 		}
 	)
 
@@ -42,14 +41,14 @@ func (a *API) Login(ctx context.Context, c application.Credentials) (application
 		if resp.Response != nil {
 			switch resp.StatusCode {
 			case 400:
-				return nil, domain.ErrInvalidCredentials
+				return nil, ErrInvalidCredentials
 			}
 		}
 		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
 	}
 
 	if err := resp.BodyStruct(&dto); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrDecodingToInternalDTO, err)
+		return nil, fmt.Errorf("%s: %w", ErrDecodingResponse, err)
 	}
 
 	return dto.toUser(a.client)

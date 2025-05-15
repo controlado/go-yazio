@@ -19,76 +19,111 @@ go get github.com/controlado/yazio
 
 ## Quick Start
 
+### Auth
+
 ```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "log"
-
-    "github.com/controlado/go-yazio/pkg/client"
-    "github.com/controlado/go-yazio/pkg/yazio"
-)
-
 const (
-    username = "username@email.com"
-    password = "superStrongPassword"
+	username = "email@email.com"
+	password = "superStrongPass"
 )
 
-func main() {
-    var (
-        ctx = context.Background()
-        c   = client.New(
-            client.WithBaseURL(yazio.DefaultBaseURL),
-        )
-    )
+api, err := yazio.New(c)
+if err != nil { // yazio.ErrClientCannotBeNil
+    log.Fatalf("building yazio api: %v", err)
+}
 
-    api, err := yazio.New(c)
-    if err != nil {
-        log.Fatalf("building yazio api: %v", err)
+cred := yazio.NewPasswordCred(username, password)
+user, err := api.Login(ctx, cred)
+if err != nil {
+    // yazio.ErrRequestingToYazio
+	// yazio.ErrDecodingResponse
+	// yazio.ErrInvalidCredentials
+    log.Fatalf("fetching user from api: %v", err)
+}
+```
+
+### Get user-data
+
+Can be used after use [`Login`](#auth)
+
+```go
+userData, err := user.Data(ctx)
+if err != nil {
+	// yazio.ErrRequestingToYazio
+	// yazio.ErrDecodingResponse
+	log.Fatalf("fetching user data from api: %v", err)
+}
+// userData.String()
+// User(João da Silva)
+
+sinceRegist := userData.SinceRegist()
+// sinceRegist.String()
+// 1 June 2023 - 1 December 2023 (183 days)
+
+userMacros, err := user.Macros(ctx, sinceRegist)
+if err != nil {
+	// yazio.ErrRequestingToYazio
+	// yazio.ErrDecodingResponse
+	log.Fatalf("fetching user macros intakes (since regist): %v", err)
+}
+// userMacros.Average().String()
+// Average 183 days
+// Kcal: 1859.953
+// Carb: 120.274
+// Fat: 50.872
+// Protein: 167.89
+
+sugarIntakes, err := user.Intake(ctx, intake.Sugar, sinceRegist)
+if err != nil {
+	// yazio.ErrRequestingToYazio
+	// yazio.ErrDecodingResponse
+	log.Fatalf("fetching user sugar intakes (since regist): %v", err)
+}
+// sugarIntakes.Average().String()
+// 39 days: 37.99
+```
+
+### Registering new food
+
+Can be used after use [`Login`](#auth)
+
+```go
+var (
+    foodName = "Banana"
+    foodCat  = food.Miscellaneous
+    foodNut  = food.Nutrients{ // required nutrients
+        intake.Energy:  0.1,
+        intake.Fat:     0.1,
+        intake.Protein: 0.1,
+        intake.Carb:    0.1,
     }
+)
 
-    cred := yazio.NewPasswordCred(username, password)
-    user, err := api.Login(ctx, cred)
-    if err != nil {
-        log.Fatalf("fetching user from api: %v", err)
-    }
+f, err := food.New(foodName, foodCat, foodNut)
+if err != nil { // food.ErrInvalidName
+    log.Fatalf("creating a new food: %v", err)
+}
 
-    userData, err := user.Data(ctx)
-    if err != nil {
-        log.Fatalf("fetching user data: %v", err)
-    }
-    // userData.String()
-    // User(João da Silva)
-
-    sinceRegist := userData.SinceRegist()
-    // sinceRegist.String()
-    // 22 January 2023 - 13 May 2025
-
-    userMacros, err := user.Macros(ctx, sinceRegist)
-    if err != nil {
-        log.Fatalf("fetching user macros (since regist): %v", err)
-    }
-    // userMacros.String()
-    // Average 38 days
-    // Kcal: 1659.870
-    // Carb: 165.053
-    // Fat: 54.531
-    // Protein: 128.297
+if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
+    // yazio.ErrRequestingToYazio
+    // food.ErrMissingNutrients
+    // food.ErrAlreadyExists
+    log.Fatalf("adding new food %s: %v", f, err)
 }
 ```
 
 ## Features
 
 * Login with password
+* Register food to user
 * Retrieve user profile & nutrition stats
 * Zero external deps beyond the Go standard library
 * Context/timeout aware
 
 ## TODO
 
-* Register food and snack intake
+* Food intake
+* Get registered food
 * Automatic retry with exponential back‑off
 
 ## Legal Notice

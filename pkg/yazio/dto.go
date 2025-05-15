@@ -5,8 +5,11 @@ import (
 	"time"
 
 	"github.com/controlado/go-yazio/internal/application"
-	"github.com/controlado/go-yazio/internal/domain"
 	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/pkg/domain/food"
+	"github.com/controlado/go-yazio/pkg/domain/intake"
+	"github.com/controlado/go-yazio/pkg/domain/user"
+	"github.com/controlado/go-yazio/pkg/visibility"
 	"github.com/google/uuid"
 )
 
@@ -52,15 +55,10 @@ type GetUserDataDTO struct {
 	BirthDate    string `json:"date_of_birth"`
 }
 
-func (d *GetUserDataDTO) toUserData() (u domain.User, err error) {
+func (d *GetUserDataDTO) toUserData() (u user.User, err error) {
 	parsedID, err := uuid.Parse(d.ID)
 	if err != nil {
 		return u, fmt.Errorf("parsing user uuid (%q): %w", d.ID, err)
-	}
-
-	birthTime, err := time.Parse(layoutISO, d.BirthDate)
-	if err != nil {
-		return u, fmt.Errorf("parsing user bith date (%q): %w", d.BirthDate, err)
 	}
 
 	registTime, err := time.Parse(layoutDate, d.Registration)
@@ -68,13 +66,18 @@ func (d *GetUserDataDTO) toUserData() (u domain.User, err error) {
 		return u, fmt.Errorf("parsing regist date (%q): %w", d.Registration, err)
 	}
 
-	u = domain.User{
+	birthTime, err := time.Parse(layoutISO, d.BirthDate)
+	if err != nil {
+		return u, fmt.Errorf("parsing user bith date (%q): %w", d.BirthDate, err)
+	}
+
+	u = user.User{
 		ID:        parsedID,
 		Token:     d.Token,
 		FirstName: d.FirstName,
 		LastName:  d.LastName,
 		IconURL:   d.IconURL,
-		Email: domain.Email{
+		Email: user.Email{
 			Value:       d.Email,
 			IsConfirmed: d.EmailStatus == confirmedEmailStatus,
 		},
@@ -85,51 +88,110 @@ func (d *GetUserDataDTO) toUserData() (u domain.User, err error) {
 	return u, nil
 }
 
-type MacroIntakeDTO struct {
-	Date    string  `json:"date"`
-	Energy  float64 `json:"energy"`
-	Carb    float64 `json:"carb"`
-	Fat     float64 `json:"fat"`
-	Protein float64 `json:"protein"`
-}
+type (
+	GetMacroIntakeDTO []MacroIntakeDTO
+	MacroIntakeDTO    struct {
+		Date    string  `json:"date"`
+		Energy  float64 `json:"energy"`
+		Carb    float64 `json:"carb"`
+		Fat     float64 `json:"fat"`
+		Protein float64 `json:"protein"`
+	}
+)
 
-type GetMacroIntakeDTO []MacroIntakeDTO
-
-func (d GetMacroIntakeDTO) toRangeMacro() (rm domain.MacrosRange, err error) {
-	for i, intake := range d {
-		parsedDate, err := time.Parse(layoutISO, intake.Date)
+func (d GetMacroIntakeDTO) toRangeMacro() (mr intake.MacrosRange, err error) {
+	for i, macroIntake := range d {
+		parsedDate, err := time.Parse(layoutISO, macroIntake.Date)
 		if err != nil {
-			return rm, fmt.Errorf("parsing %d intake date: %w", i, err)
+			return mr, fmt.Errorf("parsing %d intake date: %w", i, err)
 		}
 
-		mi := domain.MacrosIntake{
+		mi := intake.Macros{
 			Date:    parsedDate,
-			Energy:  intake.Energy,
-			Carb:    intake.Carb,
-			Fat:     intake.Fat,
-			Protein: intake.Protein,
+			Energy:  macroIntake.Energy,
+			Carb:    macroIntake.Carb,
+			Fat:     macroIntake.Fat,
+			Protein: macroIntake.Protein,
 		}
-		rm = append(rm, mi)
+		mr = append(mr, mi)
 	}
 
-	return rm, nil
+	return mr, nil
 }
 
 type GetSingleIntakeDTO map[string]float64
 
-func (d GetSingleIntakeDTO) toRangeSingle() (rs domain.SingleRange, err error) {
+func (d GetSingleIntakeDTO) toRangeSingle() (sr intake.SingleRange, err error) {
 	for date, value := range d {
 		parsedDate, err := time.Parse(layoutISO, date)
 		if err != nil {
 			return nil, fmt.Errorf("parsing single intake date %q: %w", date, err)
 		}
 
-		si := domain.SingleIntake{
+		s := intake.Single{
 			Date:  parsedDate,
 			Value: value,
 		}
-		rs = append(rs, si)
+		sr = append(sr, s)
 	}
 
-	return rs, nil
+	return sr, nil
+}
+
+type (
+	ServingsDTO []ServingDTO
+	ServingDTO  struct {
+		Type   string  `json:"serving"`
+		Amount float64 `json:"amount"`
+	}
+)
+
+func mapNutrients(nuts map[intake.Kind]float64) map[string]float64 {
+	var (
+		nutsLength = len(nuts)
+		out        = make(map[string]float64, nutsLength)
+	)
+
+	if nutsLength < 1 {
+		return out
+	}
+
+	for kind, value := range nuts {
+		nutrient := kind.String()
+		out[nutrient] = value
+	}
+
+	return out
+}
+
+func mapServings(servs []food.Serving) ServingsDTO {
+	var (
+		servingsLength = len(servs)
+		out            = make(ServingsDTO, servingsLength)
+	)
+
+	if servingsLength < 1 {
+		return out
+	}
+
+	for i, s := range servs {
+		out[i] = ServingDTO{
+			Type:   s.Kind.String(),
+			Amount: s.Amount,
+		}
+	}
+
+	return out
+}
+
+func newAddFoodBody(f food.Food, vis visibility.Food) client.Payload {
+	return client.Payload{
+		"id":         f.ID.String(),
+		"name":       f.Name,
+		"category":   f.Category.String(),
+		"base_unit":  f.BaseUnit.String(),
+		"is_private": vis,
+		"nutrients":  mapNutrients(f.Nutrients),
+		"servings":   mapServings(f.Servings),
+	}
 }

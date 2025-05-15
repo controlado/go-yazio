@@ -14,7 +14,7 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	c := client.New(
-		client.WithBaseURL(DefaultBaseURL),
+		client.WithBaseURL(BaseURL),
 	)
 	api, err := New(c)
 	assert.NotNil(t, api)

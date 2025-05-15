@@ -1,10 +1,11 @@
-package domain
+package user
 
 import (
 	"testing"
 	"time"
 
 	"github.com/controlado/go-yazio/internal/testutil/assert"
+	"github.com/controlado/go-yazio/pkg/domain/date"
 )
 
 func TestUser_SinceRegist(t *testing.T) {
@@ -22,12 +23,12 @@ func TestUser_SinceRegist(t *testing.T) {
 	testBlocks := []struct {
 		name string
 		u    *User
-		want DateRange
+		want date.Range
 	}{
 		{
 			name: "valid call",
 			u:    &User{Registration: defaultRegistTime},
-			want: DateRange{defaultRegistTime, nowResponse},
+			want: date.Range{Start: defaultRegistTime, End: nowResponse},
 		},
 	}
 

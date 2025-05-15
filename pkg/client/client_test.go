@@ -56,20 +56,20 @@ func TestClient_Request(t *testing.T) {
 		ctx        = context.Background()
 		testBlocks = []struct {
 			name           string
-			req            Request
 			wantErr        bool
 			wantStatusCode int
+			req            Request
 			checkBody      func(t *testing.T, respBody Payload)
 			serverHandle   server.Handler
 		}{
 			{
-				name: "POST with body",
+				name:           "POST with body",
+				wantStatusCode: http.StatusOK,
 				req: Request{
 					Method:   http.MethodPost,
 					Endpoint: "/body",
 					Body:     Payload{"user": "feminismo"},
 				},
-				wantStatusCode: http.StatusOK,
 				checkBody: func(t *testing.T, respBody Payload) {
 					assert.Equal(t, respBody["success"], true)
 				},
@@ -85,13 +85,12 @@ func TestClient_Request(t *testing.T) {
 				},
 			},
 			{
-				name: "GET with invalid base url",
+				name:    "GET with invalid base url",
+				wantErr: true,
 				req: Request{
 					Method:  http.MethodGet,
 					BaseURL: "@",
 				},
-				wantErr:      true,
-				serverHandle: func(t *testing.T, w http.ResponseWriter, r *http.Request) {},
 			},
 		}
 	)
