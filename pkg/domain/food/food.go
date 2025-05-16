@@ -13,6 +13,7 @@ const (
 )
 
 var (
+	newUUID        = uuid.New
 	defaultServing = Serving{
 		Kind:   Portion,
 		Amount: 100,
@@ -63,7 +64,7 @@ func New(name string, cat Category, nut Nutrients, opts ...Option) (f Food, err 
 	}
 
 	f = Food{
-		ID:        uuid.New(),
+		ID:        newUUID(),
 		Name:      name,
 		BaseUnit:  unit.Gram,
 		Category:  cat,
