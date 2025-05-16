@@ -25,11 +25,7 @@ func TestSingleRange_Average(t *testing.T) {
 					{Water, defaultDate, 5},
 					{Water, defaultDate, 7},
 				},
-				want: SingleAverage{
-					Kind:       Water,
-					DaysLength: 4,
-					Average:    4.25,
-				},
+				want: SingleAverage{Water, 4, 4.25},
 			},
 			{
 				name: "empty range should return zero average",
@@ -59,20 +55,12 @@ func TestSingleAverage_String(t *testing.T) {
 		}{
 			{
 				name: "correct call (vitamin)",
-				sa: SingleAverage{
-					Kind:       VitaminA,
-					DaysLength: 720,
-					Average:    5,
-				},
+				sa:   SingleAverage{VitaminA, 720, 5},
 				want: "720 days: 5.0mcg",
 			},
 			{
 				name: "correct call (water)",
-				sa: SingleAverage{
-					Kind:       Water,
-					DaysLength: 320,
-					Average:    2223,
-				},
+				sa:   SingleAverage{Water, 320, 2223},
 				want: "320 days: 2223.0ml",
 			},
 			{
