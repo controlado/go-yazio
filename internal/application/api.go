@@ -8,5 +8,4 @@ type Credentials interface {
 
 type API interface {
 	Refresh(context.Context, User) error
-	Login(context.Context, Credentials) (User, error)
 }

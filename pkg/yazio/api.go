@@ -16,11 +16,11 @@ type API struct {
 	client *client.Client
 }
 
-// New creates a new instance of the API.
+// New creates a new instance of the [*API].
 //
 // On failure the error wraps either:
 //   - [ErrClientCannotBeNil]
-func New(c *client.Client) (application.API, error) {
+func New(c *client.Client) (*API, error) {
 	if c == nil {
 		return nil, ErrClientCannotBeNil
 	}
@@ -50,10 +50,9 @@ func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
 	return nil
 }
 
-// Login implements the [application.API] interface.
-// It attempts to log in a user with the provided cred.
+// Login attempts to log in a user with the provided cred.
 //
-// It returns an application.User containing the user's information
+// It returns an [*User] containing the user's "connection"
 // upon successful login, or an error if the login fails.
 //
 // On failure the error wraps either:
@@ -61,7 +60,7 @@ func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
 //   - [ErrRequestingToYazio]
 //   - [ErrDecodingResponse]
 //   - Other: generic (DTO related)
-func (a *API) Login(ctx context.Context, cred application.Credentials) (application.User, error) {
+func (a *API) Login(ctx context.Context, cred application.Credentials) (*User, error) {
 	var (
 		dto LoginDTO
 		req = client.Request{

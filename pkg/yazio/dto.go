@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/controlado/go-yazio/internal/application"
 	"github.com/controlado/go-yazio/pkg/client"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"
@@ -19,7 +18,7 @@ type LoginDTO struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (d *LoginDTO) toUser(c *client.Client) (application.User, error) {
+func (d *LoginDTO) toUser(c *client.Client) (*User, error) {
 	switch {
 	case d.ExpiresInSec == 0:
 		return nil, fmt.Errorf(`zero "expires_in"`)
