@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -52,44 +53,58 @@ func TestNew(t *testing.T) {
 func TestClient_Request(t *testing.T) {
 	t.Parallel()
 
+	const (
+		invalidBaseURL = " "
+		validEndpoint  = "/test/this/is/valid"
+	)
+
 	var (
-		ctx        = context.Background()
 		testBlocks = []struct {
-			name           string
-			wantErr        bool
-			wantStatusCode int
-			req            Request
-			checkBody      func(t *testing.T, respBody Payload)
-			serverHandle   server.Handler
+			name         string
+			wantErr      bool
+			ServerStatus int
+			ServerBody   string
+			ctx          context.Context
+			req          Request
 		}{
 			{
-				name:           "POST with body",
-				wantStatusCode: http.StatusOK,
+				name: "with payloads",
+				ctx:  context.Background(),
 				req: Request{
-					Method:   http.MethodPost,
-					Endpoint: "/body",
-					Body:     Payload{"user": "feminismo"},
-				},
-				checkBody: func(t *testing.T, respBody Payload) {
-					assert.Equal(t, respBody["success"], true)
-				},
-				serverHandle: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					assert.Equal(t, r.Method, http.MethodPost)
-					assert.Equal(t, r.URL.Path, "/body")
-
-					gotBody := assert.JSON(t, r.Body)
-					assert.Equal(t, gotBody["user"], "feminismo")
-
-					respBody := Payload{"success": true}
-					assert.Write(t, w, respBody)
+					Method:      http.MethodPost,
+					Endpoint:    validEndpoint,
+					Body:        Payload{"success": true},
+					Headers:     Payload{"fake-agent": "mock"},
+					QueryParams: Payload{"name": "maria"},
 				},
 			},
 			{
-				name:    "GET with invalid base url",
+				name:    "with invalid base url",
 				wantErr: true,
+				ctx:     context.Background(),
 				req: Request{
 					Method:  http.MethodGet,
-					BaseURL: "@",
+					BaseURL: invalidBaseURL,
+				},
+			},
+			{
+				name:    "with nil ctx",
+				wantErr: true,
+				ctx:     nil,
+				req: Request{
+					Method:   http.MethodGet,
+					Endpoint: validEndpoint,
+				},
+			},
+			{
+				name:         "server responds bad",
+				wantErr:      true,
+				ctx:          context.Background(),
+				ServerStatus: http.StatusInternalServerError,
+				ServerBody:   "Please, try again later.",
+				req: Request{
+					Method:   http.MethodGet,
+					Endpoint: validEndpoint,
 				},
 			},
 		}
@@ -100,29 +115,62 @@ func TestClient_Request(t *testing.T) {
 			t.Parallel()
 
 			var (
-				srv = server.New(t, tb.serverHandle)
-				c   = New(
-					WithBaseURL(srv.URL),
-				)
+				handler = func(t *testing.T, w http.ResponseWriter, r *http.Request) {
+					assert.Equal(t, r.Method, tb.req.Method)
+					assert.Equal(t, r.URL.Path, tb.req.Endpoint)
+
+					if tb.req.Body != nil {
+						var rBody Payload
+						assert.DecodeDTO(t, r.Body, &rBody)
+						assert.DeepEqual(t, rBody, tb.req.Body)
+					}
+
+					if tb.req.Headers != nil {
+						for k, v := range tb.req.Headers {
+							assert.DeepEqual(t, r.Header.Get(k), v)
+						}
+					}
+
+					if tb.req.QueryParams != nil {
+						q := r.URL.Query()
+						for k, v := range tb.req.QueryParams {
+							assert.DeepEqual(t, q.Get(k), v)
+						}
+					}
+
+					if tb.ServerStatus != 0 {
+						w.WriteHeader(tb.ServerStatus)
+					}
+
+					if tb.ServerBody != "" {
+						bodyBytes := []byte(tb.ServerBody)
+						w.Write(bodyBytes)
+					}
+				}
+				srv = server.New(t, handler)
+				c   = New(WithBaseURL(srv.URL))
 			)
 
-			resp, err := c.Request(ctx, tb.req)
-			if resp.Response != nil && resp.Body != nil {
-				defer resp.Body.Close()
+			resp, err := c.Request(tb.ctx, tb.req)
+			if err == nil {
+				if tb.wantErr {
+					t.Fatal("want err, got nil")
+				}
+			} else {
+				if !tb.wantErr {
+					t.Fatalf("want nil error, got: %v", err)
+				}
+
+				if tb.ServerBody != "" {
+					wantBody := fmt.Sprintf(
+						"checking response: unexpected status %d (%s): %s",
+						tb.ServerStatus, statusCategory(tb.ServerStatus/100), tb.ServerBody,
+					)
+					assert.Equal(t, err.Error(), wantBody)
+				}
 			}
 
-			if (err != nil) != tb.wantErr {
-				t.Fatalf("want err (%v), got %v", tb.wantErr, err)
-			}
-
-			if tb.wantStatusCode != 0 {
-				assert.Equal(t, tb.wantStatusCode, resp.StatusCode)
-			}
-
-			if tb.checkBody != nil {
-				respBody := assert.JSON(t, resp.Body)
-				tb.checkBody(t, respBody)
-			}
+			assert.NotNil(t, resp)
 		})
 	}
 }
