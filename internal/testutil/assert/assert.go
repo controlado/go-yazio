@@ -85,16 +85,6 @@ func NotNil(t testing.TB, got any) {
 	}
 }
 
-func WriteDTO(t testing.TB, w io.Writer, i any) {
-	t.Helper()
-
-	err := json.
-		NewEncoder(w).
-		Encode(i)
-
-	NoError(t, err)
-}
-
 func DecodeDTO(t testing.TB, r io.Reader, o any) {
 	t.Helper()
 
