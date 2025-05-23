@@ -31,6 +31,21 @@ func NoError(t *testing.T, err error) {
 	}
 }
 
+func WantErr(t *testing.T, want bool, err error) {
+	t.Helper()
+
+	if want {
+		if err == nil {
+			t.Fatal("want err, but got nil")
+		}
+		t.SkipNow()
+	} else {
+		if err != nil {
+			t.Fatalf("doesn't want error, but got: %v", err)
+		}
+	}
+}
+
 func NotNil(t *testing.T, v any) {
 	t.Helper()
 
