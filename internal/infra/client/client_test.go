@@ -22,18 +22,18 @@ func TestNew(t *testing.T) {
 		}{
 			{
 				name: "no options",
-				want: &Client{requester: http.DefaultClient},
+				want: &Client{Requester: http.DefaultClient},
 			},
 			{
 				name: "custom requester",
-				want: &Client{requester: blankRequester},
+				want: &Client{Requester: blankRequester},
 				args: []Option{
 					WithRequester(blankRequester),
 				},
 			},
 			{
 				name: "nil requester",
-				want: &Client{requester: http.DefaultClient},
+				want: &Client{Requester: http.DefaultClient},
 				args: []Option{
 					WithRequester(nil),
 				},
@@ -45,7 +45,7 @@ func TestNew(t *testing.T) {
 		t.Run(tb.name, func(t *testing.T) {
 			t.Parallel()
 			got := New(tb.args...)
-			assert.Equal(t, got.requester, tb.want.requester)
+			assert.Equal(t, got.Requester, tb.want.Requester)
 		})
 	}
 }

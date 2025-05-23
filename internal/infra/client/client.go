@@ -17,8 +17,8 @@ type Requester interface {
 //
 // Instances of Client should be created using [New].
 type Client struct {
-	requester Requester
-	baseURL   string
+	Requester Requester
+	BaseURL   string
 }
 
 // New creates and returns a new [Client] instance.
@@ -30,15 +30,19 @@ type Client struct {
 // such as the base URL or a custom requester.
 func New(opts ...Option) *Client {
 	defaultClient := &Client{
-		requester: http.DefaultClient,
+		Requester: http.DefaultClient,
 	}
-	defaultClient.apply(opts...)
+
+	for _, opt := range opts {
+		opt(defaultClient)
+	}
+
 	return defaultClient
 }
 
 func (c *Client) Request(ctx context.Context, req Request) (resp Response, err error) {
 	if req.BaseURL == "" {
-		req.BaseURL = c.baseURL
+		req.BaseURL = c.BaseURL
 	}
 
 	httpRequest, err := req.HTTP(ctx)
@@ -46,7 +50,7 @@ func (c *Client) Request(ctx context.Context, req Request) (resp Response, err e
 		return resp, fmt.Errorf("parsing request to http.Request: %w", err)
 	}
 
-	resp.Response, err = c.requester.Do(httpRequest)
+	resp.Response, err = c.Requester.Do(httpRequest)
 	if err != nil {
 		return resp, fmt.Errorf("executing http.Request: %w", err)
 	}
@@ -56,10 +60,4 @@ func (c *Client) Request(ctx context.Context, req Request) (resp Response, err e
 	}
 
 	return
-}
-
-func (c *Client) apply(opts ...Option) {
-	for _, o := range opts {
-		o(c)
-	}
 }

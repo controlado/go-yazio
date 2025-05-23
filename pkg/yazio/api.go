@@ -18,19 +18,17 @@ type API struct {
 
 // New creates a new instance of the [*API].
 func New(opts ...Option) (*API, error) {
-	a := new(API)
+	defaultAPI := &API{
+		client: client.New(
+			client.WithBaseURL(baseURL),
+		),
+	}
 
 	for _, opt := range opts {
-		opt(a)
+		opt(defaultAPI)
 	}
 
-	if a.client == nil {
-		a.client = client.New(
-			client.WithBaseURL(baseURL),
-		)
-	}
-
-	return a, nil
+	return defaultAPI, nil
 }
 
 func (a *API) Refresh(ctx context.Context, currentUser application.User) error {

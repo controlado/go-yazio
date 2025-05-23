@@ -6,7 +6,7 @@ type Option func(c *Client)
 
 func WithBaseURL(s string) Option {
 	return func(c *Client) {
-		c.baseURL = s
+		c.BaseURL = s
 	}
 }
 
@@ -16,6 +16,6 @@ func WithRequester(r Requester) Option {
 	}
 
 	return func(c *Client) {
-		c.requester = r
+		c.Requester = r
 	}
 }
