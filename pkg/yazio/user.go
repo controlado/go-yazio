@@ -144,7 +144,7 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 			Method:   http.MethodGet,
 			Endpoint: singleIntakesEndpoint,
 			Headers:  defaultHeaders(u.token),
-			QueryParams: client.Payload{
+			QueryParams: client.Payload[string]{
 				"start":    r.Start.Format(layoutISO),
 				"end":      r.End.Format(layoutISO),
 				"nutrient": k.ID(),
@@ -195,7 +195,7 @@ func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, er
 			Method:   http.MethodGet,
 			Endpoint: macrosIntakesEndpoint,
 			Headers:  defaultHeaders(u.token),
-			QueryParams: client.Payload{
+			QueryParams: client.Payload[string]{
 				"start": r.Start.Format(layoutISO),
 				"end":   r.End.Format(layoutISO),
 			},

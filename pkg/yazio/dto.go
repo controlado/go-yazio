@@ -186,8 +186,8 @@ func mapServings(servs []food.Serving) ServingsDTO {
 	return out
 }
 
-func newAddFoodBody(f food.Food, vis visibility.Food) client.Payload {
-	return client.Payload{
+func newAddFoodBody(f food.Food, vis visibility.Food) client.Payload[any] {
+	return client.Payload[any]{
 		"id":         f.ID.String(),
 		"name":       f.Name,
 		"category":   f.Category.String(),

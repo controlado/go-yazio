@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -15,7 +16,15 @@ func Equal[T comparable](t *testing.T, got, want T) {
 	}
 }
 
-func DeepEqual(t *testing.T, got, want any) {
+func EqualSlices[S ~[]T, T comparable](t *testing.T, got, want S) {
+	t.Helper()
+
+	if !slices.Equal(got, want) {
+		t.Fatalf("\ngot %v\nwant %v", got, want)
+	}
+}
+
+func DeepEqual[T any](t *testing.T, got, want T) {
 	t.Helper()
 
 	if !reflect.DeepEqual(got, want) {
@@ -27,7 +36,7 @@ func NoError(t *testing.T, err error) {
 	t.Helper()
 
 	if err != nil {
-		t.Fatalf("got an error: %v", err)
+		t.Fatalf("\nwant nil err\ngot: %v", err)
 	}
 }
 
@@ -36,44 +45,46 @@ func WantErr(t *testing.T, want bool, err error) {
 
 	if want {
 		if err == nil {
-			t.Fatal("want err, but got nil")
+			t.Fatal("\nwant err\ngot nil")
 		}
 		t.SkipNow()
 	} else {
 		if err != nil {
-			t.Fatalf("doesn't want error, but got: %v", err)
+			t.Fatalf("\nwant nil err\ngot: %v", err)
 		}
 	}
 }
 
-func NotNil(t *testing.T, v any) {
+func NotNil(t *testing.T, got any) {
 	t.Helper()
 
-	if v == nil {
-		t.Fatalf("\nwant no-pointer\ngot nil")
+	if got == nil {
+		t.Fatalf("\nwant non-nil\ngot nil")
 	}
+}
+
+func WriteDTO(t *testing.T, w io.Writer, i any) {
+	t.Helper()
+
+	err := json.
+		NewEncoder(w).
+		Encode(i)
+
+	NoError(t, err)
 }
 
 func DecodeDTO(t *testing.T, r io.Reader, o any) {
 	t.Helper()
 
-	err := json.NewDecoder(r).Decode(o)
+	err := json.
+		NewDecoder(r).
+		Decode(o)
+
 	NoError(t, err)
 }
 
-func JSON(t *testing.T, r io.Reader) map[string]any {
+func ToJSON(t *testing.T, r io.Reader) (out map[string]any) {
 	t.Helper()
-
-	var out map[string]any
-	err := json.NewDecoder(r).Decode(&out)
-	NoError(t, err)
-
+	DecodeDTO(t, r, &out)
 	return out
-}
-
-func Write(t *testing.T, w io.Writer, i any) {
-	t.Helper()
-
-	err := json.NewEncoder(w).Encode(i)
-	NoError(t, err)
 }

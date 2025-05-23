@@ -5,8 +5,8 @@ import (
 	"github.com/controlado/go-yazio/pkg/client"
 )
 
-func defaultHeaders(tk application.Token) client.Payload {
-	headers := client.Payload{
+func defaultHeaders(tk application.Token) client.Payload[string] {
+	headers := client.Payload[string]{
 		`accept`:          `*/*`,
 		`accept-charset`:  `UTF-8`,
 		`connection`:      `Keep-Alive`,

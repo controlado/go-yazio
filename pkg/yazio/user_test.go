@@ -2,7 +2,6 @@ package yazio
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
@@ -24,49 +23,35 @@ func TestUser_Data(t *testing.T) {
 	t.Parallel()
 
 	var (
-		fakeID = uuid.New()
-		want   = user.Data{
-			ID:        fakeID,
-			Token:     "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
-			FirstName: "João Brito",
-			LastName:  "da Silva",
-			IconURL:   "https://images.yazio-cdn.com/process/plain/app/profile/user/2025/d297247d-51d4-4e04-9e87-c99fdf693585.jpg",
-			Email: user.Email{
-				Value:       "joaodasilva@gmail.com",
-				IsConfirmed: true,
-			},
-			Registration: time.Date(2023, 02, 06, 21, 22, 46, 0, time.UTC),
-			Birth:        time.Date(2005, 8, 26, 0, 0, 0, 0, time.UTC),
-		}
+		staticID = uuid.New()
 	)
 
-	handler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, http.MethodGet)
-		assert.Equal(t, r.URL.Path, userDataEndpoint)
+	srv, err := server.New(t,
+		server.AssertMethod(http.MethodGet),
+		server.AssertEndpoint(userDataEndpoint),
+		server.RespondBodyAny(map[string]string{
+			"uuid":                      staticID.String(),
+			"user_token":                "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
+			"first_name":                "João Brito",
+			"last_name":                 "da Silva",
+			"profile_image":             "https://images.yazio-cdn.com/process/plain/app/profile/user/2025/d297247d-51d4-4e04-9e87-c99fdf693585.jpg",
+			"email":                     "joaodasilva@gmail.com",
+			"email_confirmation_status": "confirmed",
+			"registration_date":         "2023-02-06 21:22:46",
+			"date_of_birth":             "2005-08-26",
+		}),
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, srv)
 
-		respBody := GetUserDataDTO{
-			ID:           fakeID.String(),
-			Token:        want.Token,
-			FirstName:    want.FirstName,
-			LastName:     want.LastName,
-			IconURL:      want.IconURL,
-			Email:        want.Email.Value,
-			EmailStatus:  confirmedEmailStatus,
-			Registration: "2023-02-06 21:22:46",
-			BirthDate:    "2005-08-26",
-		}
-
-		err := json.NewEncoder(w).Encode(respBody)
-		assert.NoError(t, err)
-	}
+	c := client.New(
+		client.WithBaseURL(srv.URL),
+	)
+	assert.NotNil(t, c)
 
 	var (
 		ctx = context.Background()
-		srv = server.New(t, handler)
-		c   = client.New(
-			client.WithBaseURL(srv.URL),
-		)
-		u = User{
+		u   = User{
 			client: c,
 			token: &Token{
 				expiresAt: times.Future(),
@@ -78,6 +63,20 @@ func TestUser_Data(t *testing.T) {
 
 	userData, err := u.Data(ctx)
 	assert.NoError(t, err)
+
+	want := user.Data{
+		ID:        staticID,
+		Token:     "c000a7769600a98abae7cefe56174e48240ee297e06be3052cc3e743f12bcfd5",
+		FirstName: "João Brito",
+		LastName:  "da Silva",
+		IconURL:   "https://images.yazio-cdn.com/process/plain/app/profile/user/2025/d297247d-51d4-4e04-9e87-c99fdf693585.jpg",
+		Email: user.Email{
+			Value:       "joaodasilva@gmail.com",
+			IsConfirmed: true,
+		},
+		Registration: time.Date(2023, 02, 06, 21, 22, 46, 0, time.UTC),
+		Birth:        time.Date(2005, 8, 26, 0, 0, 0, 0, time.UTC),
+	}
 	assert.Equal(t, want, userData)
 }
 
@@ -90,60 +89,43 @@ func TestUser_Macros(t *testing.T) {
 	endDate, err := time.Parse(layoutISO, "2025-04-13")
 	assert.NoError(t, err)
 
-	want := intake.MacrosRange{
-		{
-			Date:    startDate,
-			Energy:  1288.68,
-			Carb:    85.37,
-			Fat:     62.17,
-			Protein: 94.38,
-		},
-		{
-			Date:    endDate,
-			Energy:  1768.78,
-			Carb:    156.53,
-			Fat:     38.76,
-			Protein: 182.95,
-		},
-	}
-
-	handler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, http.MethodGet)
-		assert.Equal(t, r.URL.Path, macrosIntakesEndpoint)
-
-		var (
-			q              = r.URL.Query()
-			queryStartDate = q.Get("start")
-			queryEndDate   = q.Get("end")
-		)
-
-		respBody := GetMacroIntakeDTO{
+	srv, err := server.New(t,
+		server.AssertEndpoint(macrosIntakesEndpoint),
+		server.AssertQueryParams(map[string]string{
+			"start": "2025-04-12",
+			"end":   "2025-04-13",
+		}),
+		server.RespondBodyAny([]map[string]any{
 			{
-				Date:    queryStartDate,
-				Energy:  1288.68,
-				Carb:    85.37,
-				Fat:     62.17,
-				Protein: 94.38,
+				"date":        "2025-04-12",
+				"energy":      1288.68,
+				"carb":        85.37,
+				"protein":     94.38,
+				"fat":         62.17,
+				"energy_goal": 1935,
 			},
 			{
-				Date:    queryEndDate,
-				Energy:  1768.78,
-				Carb:    156.53,
-				Fat:     38.76,
-				Protein: 182.95,
+				"date":        "2025-04-13",
+				"energy":      1768.78,
+				"carb":        156.53,
+				"protein":     182.95,
+				"fat":         38.76,
+				"energy_goal": 1800,
 			},
-		}
+		}),
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, srv)
 
-		assert.Write(t, w, respBody)
-	}
+	c := client.New(
+		client.WithBaseURL(srv.URL),
+	)
+	assert.NotNil(t, c)
 
 	var (
-		ctx = context.Background()
-		srv = server.New(t, handler)
-		c   = client.New(
-			client.WithBaseURL(srv.URL),
-		)
-		u = User{
+		ctx        = context.Background()
+		macroRange = date.Range{Start: startDate, End: endDate}
+		u          = User{
 			client: c,
 			token: &Token{
 				expiresAt: times.Future(),
@@ -152,24 +134,23 @@ func TestUser_Macros(t *testing.T) {
 			},
 		}
 	)
-
-	macroRange := date.Range{
-		Start: startDate,
-		End:   endDate,
-	}
 	rm, err := u.Macros(ctx, macroRange)
 	assert.NoError(t, err)
-	assert.DeepEqual(t, rm, want)
+
+	want := intake.MacrosRange{
+		{Date: startDate, Energy: 1288.68, Carb: 85.37, Fat: 62.17, Protein: 94.38},
+		{Date: endDate, Energy: 1768.78, Carb: 156.53, Fat: 38.76, Protein: 182.95},
+	}
+	assert.EqualSlices(t, rm, want)
 }
 
 func TestUser_Intake(t *testing.T) {
 	t.Parallel()
 
-	startDate, err := time.Parse(layoutISO, "2025-04-12")
-	assert.NoError(t, err)
-
-	endDate, err := time.Parse(layoutISO, "2025-04-13")
-	assert.NoError(t, err)
+	var (
+		startDate = times.PastDate(time.UTC)
+		endDate   = times.FutureDate(time.UTC)
+	)
 
 	type args struct {
 		ctx       context.Context
@@ -180,46 +161,21 @@ func TestUser_Intake(t *testing.T) {
 	var (
 		ctx        = context.Background()
 		testBlocks = []struct {
-			name          string
-			args          args
-			wantErr       bool
-			want          intake.SingleRange
-			serverHandler server.Handler
+			name    string
+			wantErr bool
+			args    args
+			want    intake.SingleRange
 		}{
 			{
 				name: "valid args",
 				args: args{
-					ctx:  ctx,
-					kind: intake.Sugar,
-					dateRange: date.Range{
-						Start: startDate, End: endDate,
-					},
+					ctx:       ctx,
+					kind:      intake.Sugar,
+					dateRange: date.Range{Start: startDate, End: endDate},
 				},
-				wantErr: false,
 				want: intake.SingleRange{
 					{Kind: intake.Sugar, Date: startDate, Value: 89.83},
 					{Kind: intake.Sugar, Date: endDate, Value: 50.38},
-				},
-				serverHandler: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					assert.Equal(t, r.URL.Path, singleIntakesEndpoint)
-					assert.Equal(t, r.Method, http.MethodGet)
-
-					var (
-						q               = r.URL.Query()
-						queryStartDate  = q.Get("start")
-						queryEndDate    = q.Get("end")
-						queryIntakeKind = q.Get("nutrient")
-					)
-
-					if queryIntakeKind != intake.Sugar.ID() {
-						t.Fatalf("want sugar intake id, got %q", queryIntakeKind)
-					}
-
-					respBody := GetSingleIntakeDTO{
-						queryStartDate: 89.83,
-						queryEndDate:   50.38,
-					}
-					assert.Write(t, w, respBody)
 				},
 			},
 		}
@@ -229,26 +185,47 @@ func TestUser_Intake(t *testing.T) {
 		t.Run(tb.name, func(t *testing.T) {
 			t.Parallel()
 
-			var (
-				srv = server.New(t, tb.serverHandler)
-				c   = client.New(client.WithBaseURL(srv.URL))
-				u   = User{
-					client: c,
-					token: &Token{
-						expiresAt: times.Future(),
-						access:    uuid.NewString(),
-						refresh:   uuid.NewString(),
-					},
-				}
-			)
+			serverBody := make(map[string]any, len(tb.want))
+			for _, si := range tb.want {
+				d := si.Date.Format(layoutISO)
+				serverBody[d] = si.Value
+			}
 
+			srv, err := server.New(t,
+				server.AssertMethod(http.MethodGet),
+				server.AssertEndpoint(singleIntakesEndpoint),
+				server.AssertQueryParams(
+					map[string]string{
+						"start":    tb.args.dateRange.Start.Format(layoutISO),
+						"end":      tb.args.dateRange.End.Format(layoutISO),
+						"nutrient": tb.args.kind.ID(),
+					},
+				),
+				server.RespondBodyAny(serverBody),
+			)
+			assert.NoError(t, err)
+			assert.NotNil(t, srv)
+
+			c := client.New(
+				client.WithBaseURL(srv.URL),
+			)
+			assert.NotNil(t, c)
+
+			u := User{
+				client: c,
+				token: &Token{
+					expiresAt: times.Future(),
+					access:    uuid.NewString(),
+					refresh:   uuid.NewString(),
+				},
+			}
 			rm, err := u.Intake(
 				tb.args.ctx,
 				tb.args.kind,
 				tb.args.dateRange,
 			)
 			assert.NoError(t, err)
-			assert.DeepEqual(t, rm, tb.want)
+			assert.EqualSlices(t, rm, tb.want)
 		})
 	}
 }
@@ -256,24 +233,7 @@ func TestUser_Intake(t *testing.T) {
 func TestUser_AddFood(t *testing.T) {
 	t.Parallel()
 
-	defaultHandler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.URL.Path, addFoodEndpoint)
-		assert.Equal(t, r.Method, http.MethodPost)
-
-		headers := client.Payload{
-			`Cache-Control`: ` no-cache, private`,
-			`Connection`:    ` keep-alive`,
-			`Date`:          ` Wed, 14 May 2025 19:03:19 GMT`,
-			`Server`:        ` nginx`,
-		}
-		responseHeaders := w.Header()
-		headers.Set(responseHeaders)
-
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	var (
-		ctx       = context.Background()
+	var ( // static data
 		validFood = food.Food{
 			ID:       uuid.New(),
 			Name:     "banana",
@@ -292,13 +252,20 @@ func TestUser_AddFood(t *testing.T) {
 				},
 			},
 		}
+	)
+
+	var (
+		ctx        = context.Background()
 		testBlocks = []struct {
 			name         string
 			wantErr      bool
+			serverStatus int // default (success): StatusNoContent
 			food         food.Food
-			serverHandle server.Handler
 		}{
-			{name: "valid food", food: validFood},
+			{
+				name: "valid food",
+				food: validFood,
+			},
 			{
 				name:    "food missing nutrients",
 				wantErr: true,
@@ -309,16 +276,16 @@ func TestUser_AddFood(t *testing.T) {
 				}(),
 			},
 			{
-				name: "server respond (StatusBadRequest)", wantErr: true, food: validFood,
-				serverHandle: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusBadRequest)
-				},
+				name:         "server respond - StatusBadRequest",
+				wantErr:      true,
+				serverStatus: http.StatusBadRequest,
+				food:         validFood,
 			},
 			{
-				name: "server respond (StatusConflict)", wantErr: true, food: validFood,
-				serverHandle: func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusConflict)
-				},
+				name:         "server respond - StatusConflict",
+				wantErr:      true,
+				serverStatus: http.StatusConflict,
+				food:         validFood,
 			},
 		}
 	)
@@ -327,32 +294,45 @@ func TestUser_AddFood(t *testing.T) {
 		t.Run(tb.name, func(t *testing.T) {
 			t.Parallel()
 
-			handler := defaultHandler
-			if tb.serverHandle != nil {
-				handler = tb.serverHandle
+			if tb.serverStatus == 0 {
+				tb.serverStatus = http.StatusNoContent
 			}
 
-			var (
-				srv = server.New(t, handler)
-				c   = client.New(client.WithBaseURL(srv.URL))
-				u   = &User{
-					client: c,
-					token: &Token{
-						expiresAt: times.Future(),
-						access:    uuid.NewString(),
-						refresh:   uuid.NewString(),
+			srv, err := server.New(t,
+				server.AssertEndpoint(addFoodEndpoint),
+				server.AssertMethod(http.MethodPost),
+				server.RespondHeaders(
+					map[string]string{
+						"Cache-Control": "no-cache, private",
+						"Connection":    "keep-alive",
+						"Date":          "Wed, 14 May 2025 19:03:19 GMT",
+						"Server":        "nginx",
 					},
-				}
+				),
+				server.RespondStatus(tb.serverStatus),
 			)
+			assert.NoError(t, err)
+			assert.NotNil(t, srv)
 
-			err := u.AddFood(
+			c := client.New(
+				client.WithBaseURL(srv.URL),
+			)
+			assert.NotNil(t, c)
+
+			u := &User{
+				client: c,
+				token: &Token{
+					expiresAt: times.Future(),
+					access:    uuid.NewString(),
+					refresh:   uuid.NewString(),
+				},
+			}
+			err = u.AddFood(
 				ctx,
 				tb.food,
 				visibility.PrivateFood,
 			)
-			if (err != nil) != tb.wantErr {
-				t.Fatalf("want (%v), got err: %v", tb.wantErr, err)
-			}
+			assert.WantErr(t, tb.wantErr, err)
 		})
 	}
 }

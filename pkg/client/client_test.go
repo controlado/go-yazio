@@ -73,9 +73,9 @@ func TestClient_Request(t *testing.T) {
 				req: Request{
 					Method:      http.MethodPost,
 					Endpoint:    validEndpoint,
-					Body:        Payload{"success": true},
-					Headers:     Payload{"fake-agent": "mock"},
-					QueryParams: Payload{"name": "maria"},
+					Body:        Payload[any]{"success": true},
+					Headers:     Payload[string]{"fake-agent": "mock"},
+					QueryParams: Payload[string]{"name": "maria"},
 				},
 			},
 			{
@@ -114,42 +114,22 @@ func TestClient_Request(t *testing.T) {
 		t.Run(tb.name, func(t *testing.T) {
 			t.Parallel()
 
-			var (
-				handler = func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					assert.Equal(t, r.Method, tb.req.Method)
-					assert.Equal(t, r.URL.Path, tb.req.Endpoint)
-
-					if tb.req.Body != nil {
-						var rBody Payload
-						assert.DecodeDTO(t, r.Body, &rBody)
-						assert.DeepEqual(t, rBody, tb.req.Body)
-					}
-
-					if tb.req.Headers != nil {
-						for k, v := range tb.req.Headers {
-							assert.DeepEqual(t, r.Header.Get(k), v)
-						}
-					}
-
-					if tb.req.QueryParams != nil {
-						q := r.URL.Query()
-						for k, v := range tb.req.QueryParams {
-							assert.DeepEqual(t, q.Get(k), v)
-						}
-					}
-
-					if tb.ServerStatus != 0 {
-						w.WriteHeader(tb.ServerStatus)
-					}
-
-					if tb.ServerBody != "" {
-						bodyBytes := []byte(tb.ServerBody)
-						w.Write(bodyBytes)
-					}
-				}
-				srv = server.New(t, handler)
-				c   = New(WithBaseURL(srv.URL))
+			srv, err := server.New(t,
+				server.AssertMethod(tb.req.Method),
+				server.AssertEndpoint(tb.req.Endpoint),
+				server.AssertHeaders(tb.req.Headers),
+				server.AssertBody(tb.req.Body),
+				server.AssertQueryParams(tb.req.QueryParams),
+				server.RespondStatus(tb.ServerStatus),
+				server.RespondBodyString(tb.ServerBody),
 			)
+			assert.NotNil(t, srv)
+			assert.NoError(t, err)
+
+			c := New(
+				WithBaseURL(srv.URL),
+			)
+			assert.NotNil(t, c)
 
 			resp, err := c.Request(tb.ctx, tb.req)
 			if err == nil {

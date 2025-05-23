@@ -90,11 +90,7 @@ func TestNew(t *testing.T) {
 				tb.args.nut,
 				tb.args.opts...,
 			)
-
-			if (err != nil) != tb.wantErr {
-				t.Fatalf("want err (%v), got: %v", tb.wantErr, err)
-			}
-
+			assert.WantErr(t, tb.wantErr, err)
 			assert.DeepEqual(t, got, tb.want)
 		})
 	}

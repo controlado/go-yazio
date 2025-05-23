@@ -9,21 +9,21 @@ import (
 	"net/url"
 )
 
-type Payload map[string]any
+type (
+	Payload[value any] map[string]value
+)
 
-type setter interface {
+type stringSetter interface {
 	Set(string, string)
 }
 
-func (p Payload) Set(s setter) {
-	for key, value := range p {
-		if valueString, ok := value.(string); ok {
-			s.Set(key, valueString)
-		}
+func setStrings(p Payload[string], s stringSetter) {
+	for k, v := range p {
+		s.Set(k, v)
 	}
 }
 
-func (p Payload) Reader() (*bytes.Reader, error) {
+func (p Payload[T]) Reader() (*bytes.Reader, error) {
 	if p == nil {
 		return bytes.NewReader(nil), nil
 	}
@@ -40,9 +40,9 @@ type Request struct {
 	BaseURL     string
 	Method      string
 	Endpoint    string
-	Body        Payload
-	Headers     Payload
-	QueryParams Payload
+	Body        Payload[any]
+	Headers     Payload[string]
+	QueryParams Payload[string]
 }
 
 func (r *Request) HTTP(ctx context.Context) (*http.Request, error) {
@@ -67,12 +67,12 @@ func (r *Request) HTTP(ctx context.Context) (*http.Request, error) {
 	}
 
 	if r.Headers != nil {
-		r.Headers.Set(httpRequest.Header)
+		setStrings(r.Headers, httpRequest.Header)
 	}
 
 	if r.QueryParams != nil {
 		q := httpRequest.URL.Query()
-		r.QueryParams.Set(q)
+		setStrings(r.QueryParams, q)
 		httpRequest.URL.RawQuery = q.Encode()
 	}
 

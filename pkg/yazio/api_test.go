@@ -2,7 +2,6 @@ package yazio
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -33,30 +32,28 @@ func TestYazio_Login(t *testing.T) {
 		password = "testingPassword"
 	)
 
-	handler := func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.Method, http.MethodPost)
-		assert.Equal(t, r.URL.Path, loginEndpoint)
-
-		respBody := LoginDTO{
-			ExpiresInSec: 172800,
-			AccessToken:  "302af606a79142cb2ab862bf9488cfd4",
-			RefreshToken: "302af606a79142cb2ab862bf9488cfd4",
-		}
-
-		assert.Write(t, w, respBody)
+	respBody := LoginDTO{
+		ExpiresInSec: 172800,
+		AccessToken:  "302af606a79142cb2ab862bf9488cfd4",
+		RefreshToken: "302af606a79142cb2ab862bf9488cfd4",
 	}
-
-	var (
-		ctx = context.Background()
-		srv = server.New(t, handler)
-		c   = client.New(
-			client.WithBaseURL(srv.URL),
-		)
+	srv, err := server.New(t,
+		server.AssertMethod(http.MethodPost),
+		server.AssertEndpoint(loginEndpoint),
+		server.RespondBodyAny(respBody),
 	)
+	assert.NoError(t, err)
+	assert.NotNil(t, srv)
+
+	c := client.New(
+		client.WithBaseURL(srv.URL),
+	)
+	assert.NotNil(t, c)
 
 	api, err := New(c)
 	assert.NoError(t, err)
 
+	ctx := context.Background()
 	cred := NewPasswordCred(username, password)
 	user, err := api.Login(ctx, cred)
 	assert.NotNil(t, user)
@@ -110,38 +107,36 @@ func TestAPI_Refresh(t *testing.T) {
 		t.Run(tb.name, func(t *testing.T) {
 			t.Parallel()
 
+			serverBody := map[string]any{
+				"access_token":  newAccessToken,
+				"expires_in":    172800,
+				"refresh_token": newRefreshToken,
+				"token_type":    "bearer",
+			}
+			srv, err := server.New(t,
+				server.RespondBodyAny(serverBody),
+				server.RespondStatus(tb.ServerStatus),
+			)
+			assert.NoError(t, err)
+			assert.NotNil(t, srv)
+
+			c := client.New(
+				client.WithBaseURL(srv.URL),
+			)
+			assert.NotNil(t, c)
+
 			var (
-				handler = func(t *testing.T, w http.ResponseWriter, r *http.Request) {
-					responseBody := map[string]any{
-						"access_token":  newAccessToken,
-						"expires_in":    172800,
-						"refresh_token": newRefreshToken,
-						"token_type":    "bearer",
-					}
-					bodyBytes, err := json.Marshal(responseBody)
-					assert.NoError(t, err)
-
-					if tb.ServerStatus != 0 {
-						w.WriteHeader(tb.ServerStatus)
-					}
-
-					_, err = w.Write(bodyBytes)
-					assert.NoError(t, err)
-				}
-				srv        = server.New(t, handler)
-				httpClient = client.New(client.WithBaseURL(srv.URL))
-
-				ctx  = context.Background()
-				user = &User{client: httpClient, token: tb.token}
-				a    = &API{client: httpClient}
+				ctx = context.Background()
+				u   = &User{client: c, token: tb.token}
+				a   = &API{client: c}
 			)
 
-			err := a.Refresh(ctx, user)
+			err = a.Refresh(ctx, u)
 			assert.WantErr(t, tb.wantErr, err)
 
 			var ( // post update
-				userAccess  = user.token.Access()
-				userRefresh = user.token.Refresh()
+				userAccess  = u.token.Access()
+				userRefresh = u.token.Refresh()
 			)
 
 			if tb.wantUpdate {
