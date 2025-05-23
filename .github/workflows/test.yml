@@ -1,36 +1,41 @@
-name: Go
-on: [push]
+name: Run Go tests
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Go
+      - 
+        name: Checkout
+        uses: actions/checkout@v4
+      - 
+        name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.x'
-
-      - name: Cache modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
-      - name: Verify modules
-        run: go mod tidy
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Test
-        run: go test -coverprofile=coverage.txt ./...
-
-      - name: Upload results to Codecov
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+      - 
+        name: Verify before build
+        run: |
+          go mod tidy
+          go vet ./...
+      - 
+        name: Test (and generate coverage)
+        run: |
+          go test \
+            -coverpkg=./... \
+            -covermode=atomic \
+            -coverprofile=coverage.txt ./...
+      - 
+        if: success()
+        name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
