@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"io"
 	"reflect"
-	"slices"
 	"testing"
 )
 
-func Equal[T comparable](t *testing.T, got, want T) {
+func Equal[T comparable](t testing.TB, got, want T) {
 	t.Helper()
 
 	if got != want {
@@ -16,15 +15,38 @@ func Equal[T comparable](t *testing.T, got, want T) {
 	}
 }
 
-func EqualSlices[S ~[]T, T comparable](t *testing.T, got, want S) {
+func EqualSlicesItems[S ~[]T, T comparable](t testing.TB, got, want S) {
 	t.Helper()
 
-	if !slices.Equal(got, want) {
-		t.Fatalf("\ngot %v\nwant %v", got, want)
+	var (
+		gotLength  = len(got)
+		wantLength = len(want)
+	)
+
+	if gotLength != wantLength {
+		t.Fatalf("\nlen(got)=%d\nlen(want)=%d", gotLength, wantLength)
+	}
+
+	gotItems := make(map[T]int, gotLength)
+	for _, v := range got {
+		gotItems[v]++
+	}
+
+	for _, v := range want {
+		if gotItems[v] == 0 {
+			t.Fatalf("\nitem %v not received\ngot %v\nwant %v", v, got, want)
+		}
+		gotItems[v]--
+	}
+
+	for k, n := range gotItems {
+		if n != 0 {
+			t.Fatalf("\nreceived %d of %v which is not wanted\ngot %v\nwant %v", n, k, got, want)
+		}
 	}
 }
 
-func DeepEqual[T any](t *testing.T, got, want T) {
+func DeepEqual[T any](t testing.TB, got, want T) {
 	t.Helper()
 
 	if !reflect.DeepEqual(got, want) {
@@ -32,7 +54,7 @@ func DeepEqual[T any](t *testing.T, got, want T) {
 	}
 }
 
-func NoError(t *testing.T, err error) {
+func NoError(t testing.TB, err error) {
 	t.Helper()
 
 	if err != nil {
@@ -40,7 +62,7 @@ func NoError(t *testing.T, err error) {
 	}
 }
 
-func WantErr(t *testing.T, want bool, err error) {
+func WantErr(t testing.TB, want bool, err error) {
 	t.Helper()
 
 	if want {
@@ -55,7 +77,7 @@ func WantErr(t *testing.T, want bool, err error) {
 	}
 }
 
-func NotNil(t *testing.T, got any) {
+func NotNil(t testing.TB, got any) {
 	t.Helper()
 
 	if got == nil {
@@ -63,7 +85,7 @@ func NotNil(t *testing.T, got any) {
 	}
 }
 
-func WriteDTO(t *testing.T, w io.Writer, i any) {
+func WriteDTO(t testing.TB, w io.Writer, i any) {
 	t.Helper()
 
 	err := json.
@@ -73,7 +95,7 @@ func WriteDTO(t *testing.T, w io.Writer, i any) {
 	NoError(t, err)
 }
 
-func DecodeDTO(t *testing.T, r io.Reader, o any) {
+func DecodeDTO(t testing.TB, r io.Reader, o any) {
 	t.Helper()
 
 	err := json.
@@ -83,7 +105,7 @@ func DecodeDTO(t *testing.T, r io.Reader, o any) {
 	NoError(t, err)
 }
 
-func ToJSON(t *testing.T, r io.Reader) (out map[string]any) {
+func ToJSON(t testing.TB, r io.Reader) (out map[string]any) {
 	t.Helper()
 	DecodeDTO(t, r, &out)
 	return out

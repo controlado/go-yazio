@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/internal/testutil/assert"
 	"github.com/controlado/go-yazio/internal/testutil/server"
 	"github.com/controlado/go-yazio/internal/testutil/times"
-	"github.com/controlado/go-yazio/pkg/client"
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"
@@ -141,7 +141,7 @@ func TestUser_Macros(t *testing.T) {
 		{Date: startDate, Energy: 1288.68, Carb: 85.37, Fat: 62.17, Protein: 94.38},
 		{Date: endDate, Energy: 1768.78, Carb: 156.53, Fat: 38.76, Protein: 182.95},
 	}
-	assert.EqualSlices(t, rm, want)
+	assert.EqualSlicesItems(t, rm, want)
 }
 
 func TestUser_Intake(t *testing.T) {
@@ -225,7 +225,7 @@ func TestUser_Intake(t *testing.T) {
 				tb.args.dateRange,
 			)
 			assert.NoError(t, err)
-			assert.EqualSlices(t, rm, tb.want)
+			assert.EqualSlicesItems(t, rm, tb.want)
 		})
 	}
 }
