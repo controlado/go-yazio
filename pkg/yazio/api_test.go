@@ -148,8 +148,8 @@ func TestAPI_Refresh(t *testing.T) {
 				assert.Equal(t, userAccess, newAccessToken)
 				assert.Equal(t, userRefresh, newRefreshToken)
 			} else {
-				assert.Equal(t, userAccess, userAccess)
-				assert.Equal(t, userRefresh, userRefresh)
+				assert.Equal(t, userAccess, randomToken)
+				assert.Equal(t, userRefresh, randomToken)
 			}
 		})
 	}
