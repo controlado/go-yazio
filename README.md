@@ -30,13 +30,10 @@ const (
 
 var (
     ctx = context.Background()
-    c   = client.New( // go-yazio/pkg/client
-        client.WithBaseURL(yazio.BaseURL),
-    )
 )
 
-api, err := yazio.New(c)
-if err != nil { // yazio.ErrClientCannotBeNil
+api, err := yazio.New()
+if err != nil {
     log.Fatalf("building yazio api: %v", err)
 }
 

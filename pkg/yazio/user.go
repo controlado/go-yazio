@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/controlado/go-yazio/internal/application"
-	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"

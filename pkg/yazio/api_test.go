@@ -6,20 +6,17 @@ import (
 	"testing"
 
 	"github.com/controlado/go-yazio/internal/application"
+	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/internal/testutil/assert"
 	"github.com/controlado/go-yazio/internal/testutil/server"
 	"github.com/controlado/go-yazio/internal/testutil/times"
-	"github.com/controlado/go-yazio/pkg/client"
 	"github.com/google/uuid"
 )
 
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	c := client.New(
-		client.WithBaseURL(BaseURL),
-	)
-	api, err := New(c)
+	api, err := New()
 	assert.NotNil(t, api)
 	assert.NoError(t, err)
 }
@@ -45,12 +42,10 @@ func TestYazio_Login(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)
 
-	c := client.New(
-		client.WithBaseURL(srv.URL),
+	api, err := New(
+		WithBaseURL(srv.URL),
 	)
-	assert.NotNil(t, c)
-
-	api, err := New(c)
+	assert.NotNil(t, api)
 	assert.NoError(t, err)
 
 	ctx := context.Background()

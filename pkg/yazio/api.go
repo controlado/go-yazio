@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/controlado/go-yazio/internal/application"
-	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/internal/infra/client"
 )
 
 // API is the main struct for interacting with the YAZIO API.
@@ -17,16 +17,17 @@ type API struct {
 }
 
 // New creates a new instance of the [*API].
-//
-// On failure the error wraps either:
-//   - [ErrClientCannotBeNil]
-func New(c *client.Client) (*API, error) {
-	if c == nil {
-		return nil, ErrClientCannotBeNil
+func New(opts ...Option) (*API, error) {
+	a := new(API)
+
+	for _, opt := range opts {
+		opt(a)
 	}
 
-	a := &API{
-		client: c,
+	if a.client == nil {
+		a.client = client.New(
+			client.WithBaseURL(baseURL),
+		)
 	}
 
 	return a, nil

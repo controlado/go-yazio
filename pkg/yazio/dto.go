@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"
 	"github.com/controlado/go-yazio/pkg/domain/user"

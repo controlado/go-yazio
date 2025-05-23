@@ -2,7 +2,7 @@ package yazio
 
 import (
 	"github.com/controlado/go-yazio/internal/application"
-	"github.com/controlado/go-yazio/pkg/client"
+	"github.com/controlado/go-yazio/internal/infra/client"
 )
 
 func defaultHeaders(tk application.Token) client.Payload[string] {
@@ -22,14 +22,10 @@ func defaultHeaders(tk application.Token) client.Payload[string] {
 	return headers
 }
 
-// Public contant
+// API
 const (
-	// Base URL that YAZIO currently uses.
-	BaseURL string = "https://yzapi.yazio.com"
-)
+	baseURL string = "https://yzapi.yazio.com"
 
-// API endpoint
-const (
 	loginEndpoint         string = "/v18/oauth/token"
 	userDataEndpoint      string = "/v18/user"
 	addFoodEndpoint       string = "/v18/user/products"
