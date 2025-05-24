@@ -1,16 +1,19 @@
-# yazio-go
-
-Unofficial Go SDK for the YAZIO mobile API
-
-[![codecov](https://codecov.io/gh/controlado/go-yazio/branch/main/graph/badge.svg?token=Fgo4zed2G1)](https://codecov.io/gh/controlado/go-yazio)
-[![tests-badge](https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg)](https://github.com/controlado/go-yazio/actions/workflows/test.yml)
-[![report-badge](https://goreportcard.com/badge/github.com/controlado/go-yazio?style=default)](https://goreportcard.com/report/github.com/controlado/go-yazio)
-[![wakatime-badge](https://wakatime.com/badge/github/controlado/go-yazio.svg?style=default)](https://wakatime.com/badge/github/controlado/go-yazio)
-[![pkg-go-badge](https://img.shields.io/static/v1?logo=go&label=Reference&message=go-yazio&color=0476b7&style=default)](https://pkg.go.dev/github.com/controlado/go-yazio)
+<div align="center">
+    <h1>yazio-go</h1>
+    <p>Unofficial Go client for accessing the <a href="https://www.yazio.com/" rel="noopener noreferrer">YAZIO</a> API</p>
+    <p>
+        <a href="https://github.com/controlado/go-yazio/actions/workflows/test.yml"><img alt="badge: actions-tests" src="https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg"></a>
+        <a href="https://goreportcard.com/report/github.com/controlado/go-yazio"><img alt="badge: go-report-card" src="https://goreportcard.com/badge/github.com/controlado/go-yazio?style=default"></a>
+        <a href="https://codecov.io/gh/controlado/go-yazio"><img alt="badge: codecov" src="https://codecov.io/gh/controlado/go-yazio/branch/main/graph/badge.svg?token=Fgo4zed2G1"></a>
+        <a href="https://pkg.go.dev/github.com/controlado/go-yazio"><img alt="badge: pkg-reference" src="https://img.shields.io/static/v1?logo=go&label=Reference&message=go-yazio&color=0476b7&style=default"></a>
+        <a href="https://wakatime.com/badge/github/controlado/go-yazio"><img alt="badge: wakatime" src="https://wakatime.com/badge/github/controlado/go-yazio.svg?style=default"></a>
+    </p>
+</div>
 
 ## Status
 
-⚠️ Experimental – the API is private and may change at any time. Breaking changes are expected.
+Depends on YAZIO’s **private** API  
+Expect breaking changes at any time
 
 ## Installation
 
@@ -18,9 +21,12 @@ Unofficial Go SDK for the YAZIO mobile API
 go get github.com/controlado/go-yazio
 ```
 
-## Quick Start
+## Usage examples
 
-### Auth
+<details>
+    <summary>
+        <strong>Authenticate</strong>
+    </summary>
 
 ```go
 const (
@@ -47,9 +53,12 @@ if err != nil {
 }
 ```
 
-### Refresh session
+</details>
 
-Can be used after use [`Login`](#auth)
+<details>
+    <summary>
+        <strong>Refresh session</strong>
+    </summary>
 
 ```go
 userToken := user.Token()
@@ -65,9 +74,12 @@ if userToken.IsExpired() {
 }
 ```
 
-### Get user-data
+</details>
 
-Can be used after use [`Login`](#auth)
+<details>
+    <summary>
+        <strong>Get user data</strong>
+    </summary>
 
 ```go
 userData, err := user.Data(ctx)
@@ -109,9 +121,12 @@ if err != nil {
 // 320 days: 2223.0ml
 ```
 
-### Registering new food
+</details>
 
-Can be used after use [`Login`](#auth)
+<details>
+    <summary>
+        <strong>Register new food (product)</strong>
+    </summary>
 
 ```go
 var (
@@ -139,6 +154,8 @@ if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
 }
 ```
 
+</details>
+
 ## Features
 
 * Login with password
@@ -146,12 +163,6 @@ if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
 * Retrieve user profile & nutrition stats
 * Zero external deps beyond the Go standard library
 * Context/timeout aware
-
-### To-do
-
-* Food intake (entry)
-* Get registered food using ID
-* Automatic retry with exponential back‑off
 
 ## Legal Notice
 
@@ -162,9 +173,8 @@ if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
 
 ## Contributing
 
-Contributions are welcome!  
-Please open an issue or pull request.  
-By contributing, you agree to release your work under the license.
+Contributions are welcome  
+Please open an [issue](https://github.com/controlado/go-yazio/issues) or [pull request](https://github.com/controlado/go-yazio/pulls)
 
 ## License
 
