@@ -3,6 +3,10 @@ name: Run Go tests
 on:
   push:
     branches: [main]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
 
 permissions:
   contents: read
