@@ -43,6 +43,12 @@ func RespondBodyAny(b any) Option {
 	}
 }
 
+func AssertRequest() Option {
+	return func(tb *TestBuilder) {
+		tb.assertRequest = true
+	}
+}
+
 func AssertEndpoint(p string) Option {
 	return func(tb *TestBuilder) {
 		tb.assertEndpoint = p

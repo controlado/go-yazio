@@ -12,10 +12,13 @@ import (
 type TestBuilder struct {
 	buildErrs []error
 
+	receivedRequest bool
+
 	respondHeaders map[string]string
 	respondStatus  int
 	respondBody    []byte
 
+	assertRequest     bool
 	assertEndpoint    string
 	assertMethod      string
 	assertBody        map[string]any
@@ -24,6 +27,8 @@ type TestBuilder struct {
 }
 
 func New(t *testing.T, opts ...Option) (*httptest.Server, error) {
+	t.Helper()
+
 	tb := new(TestBuilder)
 
 	for _, opt := range opts {
@@ -32,6 +37,9 @@ func New(t *testing.T, opts ...Option) (*httptest.Server, error) {
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		t.Helper()
+
+		// to check with assertRequest
+		tb.receivedRequest = true
 
 		if tb.assertEndpoint != "" {
 			assert.Equal(t, r.URL.Path, tb.assertEndpoint)
@@ -79,7 +87,16 @@ func New(t *testing.T, opts ...Option) (*httptest.Server, error) {
 	}
 	httpHandler := http.HandlerFunc(handler)
 	srv := httptest.NewServer(httpHandler)
-	t.Cleanup(srv.Close)
+
+	t.Cleanup(
+		func() {
+			srv.Close()
+
+			if tb.assertRequest && !tb.receivedRequest {
+				t.Fatalf("want request, got none")
+			}
+		},
+	)
 
 	return srv, errors.Join(tb.buildErrs...)
 }
