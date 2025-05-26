@@ -1,8 +1,17 @@
 package food
 
-import "github.com/controlado/go-yazio/pkg/domain/unit"
+import (
+	"github.com/controlado/go-yazio/pkg/domain/unit"
+	"github.com/google/uuid"
+)
 
 type Option func(f *Food)
+
+func WithID(i uuid.UUID) Option {
+	return func(f *Food) {
+		f.ID = i
+	}
+}
 
 func WithBaseUnit(b unit.Base) Option {
 	return func(f *Food) {

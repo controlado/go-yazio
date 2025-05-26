@@ -13,11 +13,7 @@ const (
 )
 
 var (
-	newUUID        = uuid.New
-	defaultServing = Serving{
-		Kind:   Portion,
-		Amount: 100,
-	}
+	defaultServing = Serving{Kind: Portion, Amount: 100}
 )
 
 type (
@@ -67,14 +63,17 @@ func New(name string, cat Category, nut Nutrients, opts ...Option) (f Food, err 
 	}
 
 	f = Food{
-		ID:        newUUID(),
+		ID:        uuid.New(),
 		Name:      name,
 		BaseUnit:  unit.Gram,
 		Category:  cat,
 		Nutrients: nut,
 		Servings:  []Serving{},
 	}
-	f.apply(opts...)
+
+	for _, opt := range opts {
+		opt(&f)
+	}
 
 	if len(f.Servings) == 0 { // not defined with options
 		f.Servings = append(f.Servings, defaultServing)
@@ -89,10 +88,4 @@ func (f Food) String() string {
 		f.ID.String(),
 		f.Category.String(),
 	)
-}
-
-func (f *Food) apply(opts ...Option) {
-	for _, o := range opts {
-		o(f)
-	}
 }
