@@ -18,7 +18,8 @@ func mockNewUUID() (undo func()) {
 }
 
 func TestNew(t *testing.T) {
-	t.Parallel()
+	// TODO: refactor
+	// t.Parallel() @ global mocking uuid.New
 
 	undoMock := mockNewUUID()
 	defer undoMock()
@@ -82,7 +83,8 @@ func TestNew(t *testing.T) {
 
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
-			// t.Parallel() @ mocking uuid.New
+			// TODO: refactor
+			// t.Parallel() @ global mocking uuid.New
 
 			got, err := New(
 				tb.args.name,
@@ -97,7 +99,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestFood_String(t *testing.T) {
-	t.Parallel()
+	// TODO: refactor
+	// t.Parallel() @ global mocking uuid.New
 
 	undoMock := mockNewUUID()
 	defer undoMock()
@@ -126,7 +129,9 @@ func TestFood_String(t *testing.T) {
 
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
-			t.Parallel()
+			// TODO: refactor
+			// t.Parallel() @ global mocking uuid.New
+
 			got := tb.f.String()
 			assert.Equal(t, got, tb.want)
 		})

@@ -9,7 +9,8 @@ import (
 )
 
 func TestUser_SinceRegist(t *testing.T) {
-	t.Parallel()
+	// TODO: refactor
+	// t.Parallel() @ global mocking time.Now
 
 	var (
 		originalNowFn     = now
@@ -34,7 +35,9 @@ func TestUser_SinceRegist(t *testing.T) {
 
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
-			// t.Parallel()
+			// TODO: refactor
+			// t.Parallel() @ global mocking time.Now
+
 			got := tb.d.SinceRegist()
 			assert.Equal(t, got, tb.want)
 		})
