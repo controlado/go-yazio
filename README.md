@@ -125,14 +125,14 @@ if err != nil {
 
 <details>
     <summary>
-        <strong>Register new food (product)</strong>
+        <strong>Enter and register new food (product)</strong>
     </summary>
 
 ```go
 var (
     foodName = "Banana"
     foodCat  = food.Miscellaneous
-    foodNut  = food.Nutrients{ // required nutrients
+    foodNuts = food.Nutrients{ // required nutrients
         intake.Energy:  0.1,
         intake.Fat:     0.1,
         intake.Protein: 0.1,
@@ -140,17 +140,27 @@ var (
     }
 )
 
-f, err := food.New(foodName, foodCat, foodNut)
+newFood, err := food.New(foodName, foodCat, foodNuts)
 if err != nil { // food.ErrInvalidName
     log.Fatalf("creating a new food: %v", err)
 }
 
-if err := user.AddFood(ctx, f, visibility.PrivateFood); err != nil {
+if err := user.AddFood(ctx, newFood, visibility.PrivateFood); err != nil {
     // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
     // food.ErrMissingNutrients
     // food.ErrAlreadyExists
-    log.Fatalf("adding new food %s: %v", f, err)
+    log.Fatalf("adding new food %s: %v", newFood, err)
+}
+
+var (
+    entryServing = food.Serving{Kind: food.Portion, Amount: 100}
+)
+
+if err := user.EntryFood(ctx, meal.Dinner, newFood.ID, entryServing); err != nil {
+    // yazio.ErrExpiredToken
+    // yazio.ErrRequestingToYazio
+    log.Fatalf("entering new food %s: %v", newFood, err)
 }
 ```
 

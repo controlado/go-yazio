@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/controlado/go-yazio/internal/application"
 	"github.com/controlado/go-yazio/internal/infra/client"
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"
+	"github.com/controlado/go-yazio/pkg/domain/meal"
 	"github.com/controlado/go-yazio/pkg/domain/user"
 	"github.com/controlado/go-yazio/pkg/visibility"
+	"github.com/google/uuid"
 )
 
 // User represents an authenticated YAZIO account.
@@ -30,6 +33,65 @@ type User struct {
 // Token returns the [application.Token] held by u.
 func (u *User) Token() application.Token {
 	return u.token
+}
+
+// EntryFood adds a food-intake to the authenticated user's diary.
+//
+// It always targets today, saving the [meal.Time] [food.ID] [food.Serving].
+//
+//   - YAZIO does not validate the product ID:
+//
+//     If foodID doesn't point to a valid food, the request succeeds
+//     but the entry is silently discarded. Ensure the product exists
+//     before invoking this method.
+//
+// On failure the error wraps either:
+//   - [ErrExpiredToken]
+//   - [ErrRequestingToYazio]
+func (u *User) EntryFood(ctx context.Context, mealTime meal.Time, foodID food.ID, serving food.Serving) error {
+	if u.token.IsExpired() {
+		return ErrExpiredToken
+	}
+
+	var (
+		req = client.Request{
+			Method:   http.MethodPost,
+			Endpoint: entryFoodEndpoint,
+			Headers:  defaultHeaders(u.token),
+			Body: client.Payload[any]{
+				"products": []map[string]any{
+					{
+						"id":               uuid.New(),
+						"date":             time.Now().Format(layoutDate),
+						"daytime":          mealTime,
+						"product_id":       foodID,
+						"serving":          serving.Kind,
+						"amount":           serving.Amount,
+						"serving_quantity": 1,
+					},
+				},
+				"simple_products": []any{},
+				"recipe_portions": []any{},
+			},
+		}
+	)
+
+	resp, err := u.client.Request(ctx, req)
+	if err != nil {
+		if resp.Response != nil {
+			switch resp.StatusCode {
+			case http.StatusUnauthorized:
+				return ErrExpiredToken
+			case http.StatusConflict:
+				// theoretically it's not possible because
+				// we generate a uuid for each call.
+				return food.ErrAlreadyExists
+			}
+		}
+		return fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+	}
+
+	return nil
 }
 
 // AddFood registers a new food (product) using the account.

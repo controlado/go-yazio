@@ -21,6 +21,9 @@ var (
 )
 
 type (
+	// ID is the food ID.
+	ID = uuid.UUID
+
 	// Nutrients represents a map of nutrient kinds to their respective values.
 	//
 	// The key is an [intake.Kind] (e.g., protein, carbohydrates, fat, energy)
@@ -36,7 +39,7 @@ type (
 	// food category. The Nutrients field provides a breakdown of its nutritional
 	// content, and Servings lists predefined ways the food can be measured or logged.
 	Food struct {
-		ID        uuid.UUID // ID is the unique identifier for the food item.
+		ID        ID        // ID is the unique identifier for the food item.
 		Name      string    // Name is the descriptive name of the food item.
 		BaseUnit  unit.Base // BaseUnit specifies the food fundamental unit of measurement.
 		Category  Category  // Category classifies the food item; [Meat] [Miscellaneous]...

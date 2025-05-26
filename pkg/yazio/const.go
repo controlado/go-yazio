@@ -28,6 +28,7 @@ const (
 
 	loginEndpoint         string = "/v18/oauth/token"
 	userDataEndpoint      string = "/v18/user"
+	entryFoodEndpoint     string = "/v18/user/consumed-items"
 	addFoodEndpoint       string = "/v18/user/products"
 	singleIntakesEndpoint string = "/v18/user/consumed-items/specific-nutrient-daily"
 	macrosIntakesEndpoint string = "/v18/user/consumed-items/nutrients-daily"

@@ -13,6 +13,7 @@ import (
 	"github.com/controlado/go-yazio/pkg/domain/date"
 	"github.com/controlado/go-yazio/pkg/domain/food"
 	"github.com/controlado/go-yazio/pkg/domain/intake"
+	"github.com/controlado/go-yazio/pkg/domain/meal"
 	"github.com/controlado/go-yazio/pkg/domain/unit"
 	"github.com/controlado/go-yazio/pkg/domain/user"
 	"github.com/controlado/go-yazio/pkg/visibility"
@@ -331,6 +332,110 @@ func TestUser_AddFood(t *testing.T) {
 				ctx,
 				tb.food,
 				visibility.PrivateFood,
+			)
+			assert.WantErr(t, tb.wantErr, err)
+		})
+	}
+}
+
+func TestUser_EntryFood(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		ctx     context.Context
+		meal    meal.Time
+		id      food.ID
+		serving food.Serving
+	}
+
+	var ( // static
+		validFoodID  = uuid.New()
+		validServing = food.Serving{Kind: food.Portion, Amount: 100}
+		validToken   = &Token{expiresAt: times.Future(), access: "valid-access", refresh: "valid-refresh"}
+		expiredToken = &Token{expiresAt: times.Past(), access: "invalid-access", refresh: "invalid-refresh"}
+	)
+
+	testBlocks := []struct {
+		name          string
+		wantErr       bool
+		respondStatus int
+		token         *Token
+		a             args
+	}{
+		{
+			name:  "valid path",
+			token: validToken,
+			a: args{
+				ctx:     context.Background(),
+				meal:    meal.Dinner,
+				id:      validFoodID,
+				serving: validServing,
+			},
+		},
+		{
+			name:    "expired token",
+			wantErr: true,
+			token:   expiredToken,
+			a: args{
+				ctx:     context.Background(),
+				meal:    meal.Dinner,
+				id:      validFoodID,
+				serving: validServing,
+			},
+		},
+		{
+			name:          "server -> http.StatusUnauthorized: invalid token",
+			wantErr:       true,
+			respondStatus: http.StatusUnauthorized,
+			token:         validToken, // to pass first check
+			a: args{
+				ctx:     context.Background(),
+				meal:    meal.Dinner,
+				id:      validFoodID,
+				serving: validServing,
+			},
+		},
+		{
+			name:          "server -> http.StatusConflict: action uuid already exists",
+			wantErr:       true,
+			respondStatus: http.StatusConflict,
+			token:         validToken,
+			a: args{
+				ctx:     context.Background(),
+				meal:    meal.Dinner,
+				id:      validFoodID,
+				serving: validServing,
+			},
+		},
+	}
+
+	for _, tb := range testBlocks {
+		t.Run(tb.name, func(t *testing.T) {
+			t.Parallel()
+
+			if tb.respondStatus == 0 {
+				tb.respondStatus = http.StatusNoContent
+			}
+
+			srv, err := server.New(t,
+				server.AssertMethod(http.MethodPost),
+				server.AssertEndpoint("/v18/user/consumed-items"),
+				server.RespondStatus(tb.respondStatus),
+			)
+			assert.NoError(t, err)
+			assert.NotNil(t, srv)
+
+			u := &User{
+				token: tb.token,
+				client: client.New(
+					client.WithBaseURL(srv.URL),
+				),
+			}
+			err = u.EntryFood(
+				tb.a.ctx,
+				tb.a.meal,
+				tb.a.id,
+				tb.a.serving,
 			)
 			assert.WantErr(t, tb.wantErr, err)
 		})
