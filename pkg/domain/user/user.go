@@ -9,11 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	// now is used for mocking time in tests.
-	now = time.Now
-)
-
 // Data represents the detailed profile information of a YAZIO user.
 //
 // It includes unique identifiers, personal details, authentication tokens,
@@ -37,10 +32,14 @@ func (d *Data) String() string {
 // representing the period from the user's registration
 // time up to the current moment.
 func (d *Data) SinceRegist() date.Range {
-	return date.Range{
-		Start: d.Registration,
-		End:   now(),
-	}
+	var (
+		timeNow = time.Now()
+	)
+	return d.SinceRegistAt(timeNow)
+}
+
+func (d *Data) SinceRegistAt(until time.Time) date.Range {
+	return date.Range{Start: d.Registration, End: until}
 }
 
 type Email struct {

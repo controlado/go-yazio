@@ -10,19 +10,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func mockNewUUID() (undo func()) {
-	originalFn := newUUID
-	staticUUID := originalFn()
-	newUUID = func() uuid.UUID { return staticUUID }
-	return func() { newUUID = originalFn }
-}
-
 func TestNew(t *testing.T) {
-	// TODO: refactor
-	// t.Parallel() @ global mocking uuid.New
+	t.Parallel()
 
-	undoMock := mockNewUUID()
-	defer undoMock()
+	var ( // static
+		staticUUID = uuid.New()
+	)
 
 	type args struct {
 		name string
@@ -44,9 +37,12 @@ func TestNew(t *testing.T) {
 				name: "Banana",
 				cat:  Miscellaneous,
 				nut:  Nutrients{intake.AddedSugar: 0.1},
+				opts: []Option{
+					WithID(staticUUID),
+				},
 			},
 			want: Food{
-				ID:        newUUID(),
+				ID:        staticUUID,
 				Name:      "Banana",
 				BaseUnit:  unit.Gram,
 				Category:  Miscellaneous,
@@ -61,12 +57,13 @@ func TestNew(t *testing.T) {
 				cat:  Miscellaneous,
 				nut:  Nutrients{intake.Water: 0.1},
 				opts: []Option{
+					WithID(staticUUID),
 					WithBaseUnit(unit.Milliliter),
 					WithNewServing(Pack, 50),
 				},
 			},
 			want: Food{
-				ID:        newUUID(),
+				ID:        staticUUID,
 				Name:      "Liquid",
 				BaseUnit:  unit.Milliliter,
 				Category:  Miscellaneous,
@@ -83,9 +80,7 @@ func TestNew(t *testing.T) {
 
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
-			// TODO: refactor
-			// t.Parallel() @ global mocking uuid.New
-
+			t.Parallel()
 			got, err := New(
 				tb.args.name,
 				tb.args.cat,
@@ -99,11 +94,11 @@ func TestNew(t *testing.T) {
 }
 
 func TestFood_String(t *testing.T) {
-	// TODO: refactor
-	// t.Parallel() @ global mocking uuid.New
+	t.Parallel()
 
-	undoMock := mockNewUUID()
-	defer undoMock()
+	var ( // static
+		staticUUID = uuid.New()
+	)
 
 	testBlocks := []struct {
 		name string
@@ -113,7 +108,7 @@ func TestFood_String(t *testing.T) {
 		{
 			name: "valid food",
 			f: Food{
-				ID:       newUUID(),
+				ID:       staticUUID,
 				Name:     "Sadness",
 				BaseUnit: unit.Microgram,
 				Category: Meat,
@@ -123,15 +118,13 @@ func TestFood_String(t *testing.T) {
 					intake.Water:   20,
 				},
 			},
-			want: fmt.Sprintf("Food(%q, %s, %s)", "Sadness", newUUID(), Meat),
+			want: fmt.Sprintf("Food(%q, %s, %s)", "Sadness", staticUUID, Meat),
 		},
 	}
 
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
-			// TODO: refactor
-			// t.Parallel() @ global mocking uuid.New
-
+			t.Parallel()
 			got := tb.f.String()
 			assert.Equal(t, got, tb.want)
 		})

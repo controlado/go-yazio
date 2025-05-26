@@ -8,37 +8,30 @@ import (
 	"github.com/controlado/go-yazio/pkg/domain/date"
 )
 
-func TestUser_SinceRegist(t *testing.T) {
-	// TODO: refactor
-	// t.Parallel() @ global mocking time.Now
+func TestUser_SinceRegistAt(t *testing.T) {
+	t.Parallel()
 
-	var (
-		originalNowFn     = now
-		defaultRegistTime = time.Date(2023, 8, 26, 12, 0, 0, 0, time.UTC)
-		nowResponse       = time.Date(2025, 5, 13, 15, 0, 0, 0, time.UTC)
+	var ( // static
+		startTime = time.Date(2023, 8, 26, 12, 0, 0, 0, time.UTC)
+		endTime   = time.Date(2025, 5, 13, 15, 0, 0, 0, time.UTC)
 	)
-
-	defer func() { now = originalNowFn }()
-	now = func() time.Time { return nowResponse }
 
 	testBlocks := []struct {
 		name string
-		d    *Data
+		ud   *Data
 		want date.Range
 	}{
 		{
 			name: "valid call",
-			d:    &Data{Registration: defaultRegistTime},
-			want: date.Range{Start: defaultRegistTime, End: nowResponse},
+			ud:   &Data{Registration: startTime},
+			want: date.Range{Start: startTime, End: endTime},
 		},
 	}
 
 	for _, tb := range testBlocks {
 		t.Run(tb.name, func(t *testing.T) {
-			// TODO: refactor
-			// t.Parallel() @ global mocking time.Now
-
-			got := tb.d.SinceRegist()
+			t.Parallel()
+			got := tb.ud.SinceRegistAt(endTime)
 			assert.Equal(t, got, tb.want)
 		})
 	}
