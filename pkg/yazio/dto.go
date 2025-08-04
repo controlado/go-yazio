@@ -69,7 +69,7 @@ func (d *GetUserDataDTO) toUserData() (u user.Data, err error) {
 
 	birthTime, err := time.Parse(layoutISO, d.BirthDate)
 	if err != nil {
-		return u, fmt.Errorf("parsing user bith date (%q): %w", d.BirthDate, err)
+		return u, fmt.Errorf("parsing user birth date (%q): %w", d.BirthDate, err)
 	}
 
 	u = user.Data{
