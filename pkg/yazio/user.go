@@ -161,7 +161,7 @@ func (u *User) Data(ctx context.Context) (d user.Data, err error) {
 	}
 
 	var (
-		dto GetUserDataDTO
+		dto getUserDataDTO
 		req = client.Request{
 			Method:   http.MethodGet,
 			Endpoint: userDataEndpoint,
@@ -201,7 +201,7 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 	}
 
 	var (
-		dto GetSingleIntakeDTO
+		dto getSingleIntakeDTO
 		req = client.Request{
 			Method:   http.MethodGet,
 			Endpoint: singleIntakesEndpoint,
@@ -252,7 +252,7 @@ func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, er
 	}
 
 	var (
-		dto GetMacroIntakeDTO
+		dto getMacroIntakeDTO
 		req = client.Request{
 			Method:   http.MethodGet,
 			Endpoint: macrosIntakesEndpoint,

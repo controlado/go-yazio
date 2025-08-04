@@ -29,7 +29,7 @@ func TestYazio_Login(t *testing.T) {
 		password = "testingPassword"
 	)
 
-	respBody := LoginDTO{
+	respBody := loginDTO{
 		ExpiresInSec: 172800,
 		AccessToken:  "302af606a79142cb2ab862bf9488cfd4",
 		RefreshToken: "302af606a79142cb2ab862bf9488cfd4",

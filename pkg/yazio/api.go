@@ -61,7 +61,7 @@ func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
 //   - Other: generic (DTO related)
 func (a *API) Login(ctx context.Context, cred application.Credentials) (*User, error) {
 	var (
-		dto LoginDTO
+		dto loginDTO
 		req = client.Request{
 			Method:   http.MethodPost,
 			Endpoint: loginEndpoint,

@@ -12,13 +12,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type LoginDTO struct {
+type loginDTO struct {
 	ExpiresInSec int64  `json:"expires_in"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (d *LoginDTO) toUser(c *client.Client) (*User, error) {
+func (d *loginDTO) toUser(c *client.Client) (*User, error) {
 	switch {
 	case d.ExpiresInSec == 0:
 		return nil, fmt.Errorf(`zero "expires_in"`)
@@ -44,7 +44,7 @@ func (d *LoginDTO) toUser(c *client.Client) (*User, error) {
 	return user, nil
 }
 
-type GetUserDataDTO struct {
+type getUserDataDTO struct {
 	ID           string `json:"uuid"`
 	Token        string `json:"user_token"`
 	FirstName    string `json:"first_name"`
@@ -56,7 +56,7 @@ type GetUserDataDTO struct {
 	BirthDate    string `json:"date_of_birth"`
 }
 
-func (d *GetUserDataDTO) toUserData() (u user.Data, err error) {
+func (d *getUserDataDTO) toUserData() (u user.Data, err error) {
 	parsedID, err := uuid.Parse(d.ID)
 	if err != nil {
 		return u, fmt.Errorf("parsing user uuid (%q): %w", d.ID, err)
@@ -90,8 +90,8 @@ func (d *GetUserDataDTO) toUserData() (u user.Data, err error) {
 }
 
 type (
-	GetMacroIntakeDTO []MacroIntakeDTO
-	MacroIntakeDTO    struct {
+	getMacroIntakeDTO []macroIntakeDTO
+	macroIntakeDTO    struct {
 		Date    string  `json:"date"`
 		Energy  float64 `json:"energy"`
 		Carb    float64 `json:"carb"`
@@ -100,7 +100,7 @@ type (
 	}
 )
 
-func (d GetMacroIntakeDTO) toRangeMacro() (mr intake.MacrosRange, err error) {
+func (d getMacroIntakeDTO) toRangeMacro() (mr intake.MacrosRange, err error) {
 	for i, macroIntake := range d {
 		parsedDate, err := time.Parse(layoutISO, macroIntake.Date)
 		if err != nil {
@@ -120,9 +120,9 @@ func (d GetMacroIntakeDTO) toRangeMacro() (mr intake.MacrosRange, err error) {
 	return mr, nil
 }
 
-type GetSingleIntakeDTO map[string]float64
+type getSingleIntakeDTO map[string]float64
 
-func (d GetSingleIntakeDTO) toRangeSingle(k intake.Kind) (sr intake.SingleRange, err error) {
+func (d getSingleIntakeDTO) toRangeSingle(k intake.Kind) (sr intake.SingleRange, err error) {
 	for date, value := range d {
 		parsedDate, err := time.Parse(layoutISO, date)
 		if err != nil {
@@ -141,8 +141,8 @@ func (d GetSingleIntakeDTO) toRangeSingle(k intake.Kind) (sr intake.SingleRange,
 }
 
 type (
-	ServingsDTO []ServingDTO
-	ServingDTO  struct {
+	servingsDTO []servingDTO
+	servingDTO  struct {
 		Type   string  `json:"serving"`
 		Amount float64 `json:"amount"`
 	}
@@ -166,10 +166,10 @@ func mapNutrients(nuts map[intake.Kind]float64) map[string]float64 {
 	return out
 }
 
-func mapServings(servs []food.Serving) ServingsDTO {
+func mapServings(servs []food.Serving) servingsDTO {
 	var (
 		servingsLength = len(servs)
-		out            = make(ServingsDTO, servingsLength)
+		out            = make(servingsDTO, servingsLength)
 	)
 
 	if servingsLength < 1 {
@@ -177,7 +177,7 @@ func mapServings(servs []food.Serving) ServingsDTO {
 	}
 
 	for i, s := range servs {
-		out[i] = ServingDTO{
+		out[i] = servingDTO{
 			Type:   s.Kind.String(),
 			Amount: s.Amount,
 		}
