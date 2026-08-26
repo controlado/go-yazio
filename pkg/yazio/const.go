@@ -7,12 +7,11 @@ import (
 
 func defaultHeaders(tk application.Token) client.Payload[string] {
 	headers := client.Payload[string]{
-		`accept`:          `*/*`,
-		`accept-charset`:  `UTF-8`,
-		`connection`:      `Keep-Alive`,
-		`host`:            `yzapi.yazio.com`,
-		`accept-encoding`: `application/json`,
-		`user-agent`:      `YAZIO/12.89.0 (com.yazio.android; build:606121218; Android 36) OkHttp3/5.4.0`,
+		`accept`:         `*/*`,
+		`accept-charset`: `UTF-8`,
+		`connection`:     `Keep-Alive`,
+		`host`:           `yzapi.yazio.com`,
+		`user-agent`:     `YAZIO/12.89.0 (com.yazio.android; build:606121218; Android 36) OkHttp3/5.4.0`,
 	}
 
 	if tk != nil {
