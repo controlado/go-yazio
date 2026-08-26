@@ -419,7 +419,7 @@ func TestUser_EntryFood(t *testing.T) {
 
 			srv, err := server.New(t,
 				server.AssertMethod(http.MethodPost),
-				server.AssertEndpoint("/v18/user/consumed-items"),
+				server.AssertEndpoint("/v20/user/consumed-items"),
 				server.RespondStatus(tb.respondStatus),
 			)
 			assert.NoError(t, err)

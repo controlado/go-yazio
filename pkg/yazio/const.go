@@ -26,12 +26,12 @@ func defaultHeaders(tk application.Token) client.Payload[string] {
 const (
 	baseURL string = "https://yzapi.yazio.com"
 
-	loginEndpoint         string = "/v18/oauth/token"
-	userDataEndpoint      string = "/v18/user"
-	entryFoodEndpoint     string = "/v18/user/consumed-items"
-	addFoodEndpoint       string = "/v18/user/products"
-	singleIntakesEndpoint string = "/v18/user/consumed-items/specific-nutrient-daily"
-	macrosIntakesEndpoint string = "/v18/user/consumed-items/nutrients-daily"
+	loginEndpoint         string = "/v20/oauth/token"
+	userDataEndpoint      string = "/v20/user"
+	entryFoodEndpoint     string = "/v20/user/consumed-items"
+	addFoodEndpoint       string = "/v20/user/products"
+	singleIntakesEndpoint string = "/v20/user/consumed-items/specific-nutrient-daily"
+	macrosIntakesEndpoint string = "/v20/user/consumed-items/nutrients-daily"
 )
 
 // Time layout
