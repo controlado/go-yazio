@@ -70,6 +70,10 @@ func (r *Request) HTTP(ctx context.Context) (*http.Request, error) {
 		setStrings(r.Headers, httpRequest.Header)
 	}
 
+	if r.Body != nil && httpRequest.Header.Get("content-type") == "" {
+		httpRequest.Header.Set("content-type", "application/json")
+	}
+
 	if r.QueryParams != nil {
 		q := httpRequest.URL.Query()
 		setStrings(r.QueryParams, q)

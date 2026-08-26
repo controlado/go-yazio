@@ -12,7 +12,6 @@ func defaultHeaders(tk application.Token) client.Payload[string] {
 		`connection`:      `Keep-Alive`,
 		`host`:            `yzapi.yazio.com`,
 		`accept-encoding`: `application/json`,
-		`content-type`:    `application/json`,
 		`user-agent`:      `YAZIO/12.31.0 (com.yazio.android; build:411052340; Android 34) Ktor`,
 	}
 
