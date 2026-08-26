@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"github.com/controlado/go-yazio/internal/testutil/assert"
@@ -12,13 +13,14 @@ import (
 type TestBuilder struct {
 	buildErrs []error
 
-	receivedRequest bool
+	receivedRequestN atomic.Int64
 
 	respondHeaders map[string]string
 	respondStatus  int
 	respondBody    []byte
 
 	assertRequest     bool
+	assertRequestN    int64
 	assertEndpoint    string
 	assertMethod      string
 	assertBody        map[string]any
@@ -30,6 +32,7 @@ func New(t *testing.T, opts ...Option) (*httptest.Server, error) {
 	t.Helper()
 
 	tb := new(TestBuilder)
+	tb.assertRequestN = -1
 
 	for _, opt := range opts {
 		opt(tb)
@@ -38,8 +41,8 @@ func New(t *testing.T, opts ...Option) (*httptest.Server, error) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		t.Helper()
 
-		// to check with assertRequest
-		tb.receivedRequest = true
+		// to check with assertRequest and assertRequestN
+		tb.receivedRequestN.Add(1)
 
 		if tb.assertEndpoint != "" {
 			assert.Equal(t, r.URL.Path, tb.assertEndpoint)
@@ -92,8 +95,14 @@ func New(t *testing.T, opts ...Option) (*httptest.Server, error) {
 		func() {
 			srv.Close()
 
-			if tb.assertRequest && !tb.receivedRequest {
-				t.Fatalf("want request, got none")
+			receivedRequestN := tb.receivedRequestN.Load()
+
+			if tb.assertRequest && receivedRequestN == 0 {
+				t.Fatal("want at least one request, got none")
+			}
+
+			if tb.assertRequestN >= 0 && tb.assertRequestN != receivedRequestN {
+				t.Fatalf("assertRequestN(%d) != receivedRequestN(%d)", tb.assertRequestN, receivedRequestN)
 			}
 		},
 	)

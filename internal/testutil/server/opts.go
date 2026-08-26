@@ -43,7 +43,16 @@ func RespondBodyAny(b any) Option {
 	}
 }
 
-func AssertRequest() Option {
+func AssertRequestN(n int64) Option {
+	return func(tb *TestBuilder) {
+		tb.assertRequestN = n
+	}
+}
+
+func AssertRequest(want bool) Option {
+	if !want {
+		return AssertRequestN(0)
+	}
 	return func(tb *TestBuilder) {
 		tb.assertRequest = true
 	}

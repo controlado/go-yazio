@@ -60,12 +60,13 @@ func TestClient_Request(t *testing.T) {
 
 	var (
 		testBlocks = []struct {
-			name         string
-			wantErr      bool
-			ServerStatus int
-			ServerBody   string
-			ctx          context.Context
-			req          Request
+			name          string
+			wantErr       bool
+			wantNoRequest bool
+			ServerStatus  int
+			ServerBody    string
+			ctx           context.Context
+			req           Request
 		}{
 			{
 				name: "with payloads",
@@ -79,18 +80,20 @@ func TestClient_Request(t *testing.T) {
 				},
 			},
 			{
-				name:    "with invalid base url",
-				wantErr: true,
-				ctx:     context.Background(),
+				name:          "with invalid base url",
+				wantErr:       true,
+				wantNoRequest: true,
+				ctx:           context.Background(),
 				req: Request{
 					Method:  http.MethodGet,
 					BaseURL: invalidBaseURL,
 				},
 			},
 			{
-				name:    "with nil ctx",
-				wantErr: true,
-				ctx:     nil,
+				name:          "with nil ctx",
+				wantErr:       true,
+				wantNoRequest: true,
+				ctx:           nil,
 				req: Request{
 					Method:   http.MethodGet,
 					Endpoint: validEndpoint,
@@ -115,6 +118,7 @@ func TestClient_Request(t *testing.T) {
 			t.Parallel()
 
 			srv, err := server.New(t,
+				server.AssertRequest(!tb.wantNoRequest),
 				server.AssertMethod(tb.req.Method),
 				server.AssertEndpoint(tb.req.Endpoint),
 				server.AssertHeaders(tb.req.Headers),
