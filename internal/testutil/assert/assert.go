@@ -77,11 +77,19 @@ func WantErr(t testing.TB, want bool, err error) {
 	}
 }
 
-func NotNil(t testing.TB, got any) {
+func NotNil[T any](t testing.TB, got *T) {
 	t.Helper()
 
 	if got == nil {
-		t.Fatalf("\nwant non-nil\ngot nil")
+		t.Fatal("\nwant non-nil\ngot nil")
+	}
+}
+
+func Nil[T any](t testing.TB, got *T) {
+	t.Helper()
+
+	if got != nil {
+		t.Fatalf("\nwant nil\ngot: %v", got)
 	}
 }
 

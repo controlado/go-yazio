@@ -154,7 +154,11 @@ func TestClient_Request(t *testing.T) {
 				}
 			}
 
-			assert.NotNil(t, resp)
+			if tb.wantNoRequest {
+				assert.Nil(t, resp.Response)
+			} else {
+				assert.NotNil(t, resp.Response)
+			}
 		})
 	}
 }
