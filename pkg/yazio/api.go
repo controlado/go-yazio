@@ -15,6 +15,7 @@ import (
 // It holds the HTTP client used for making requests.
 type API struct {
 	client *client.Client
+	now    func() time.Time
 }
 
 // New creates a new instance of the [*API].
@@ -23,6 +24,7 @@ func New(opts ...Option) (*API, error) {
 		client: client.New(
 			client.WithBaseURL(baseURL),
 		),
+		now: time.Now,
 	}
 
 	for _, opt := range opts {
@@ -122,6 +124,6 @@ func (a *API) NewUserWithTokens(accessToken, refreshToken string, expiresAt time
 //
 // It returns an error if the access token or refresh token is empty.
 func (a *API) NewUserWithTokensAndExpiresIn(accessToken, refreshToken string, expiresIn time.Duration) (*User, error) {
-	expiresAt := time.Now().Add(expiresIn)
+	expiresAt := a.now().Add(expiresIn)
 	return a.NewUserWithTokens(accessToken, refreshToken, expiresAt)
 }

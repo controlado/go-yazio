@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/controlado/go-yazio/internal/application"
 	"github.com/controlado/go-yazio/internal/infra/client"
@@ -53,6 +54,99 @@ func TestYazio_Login(t *testing.T) {
 	user, err := api.Login(ctx, cred)
 	assert.NotNil(t, user)
 	assert.NoError(t, err)
+}
+
+func TestAPI_NewUserWithTokens(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		accessToken, refreshToken string
+		expiresAt                 time.Time
+	}
+
+	var (
+		newAccessToken  = uuid.NewString()
+		newRefreshToken = uuid.NewString()
+		testBlocks      = []struct {
+			name    string
+			wantErr bool
+			args    args
+		}{
+			{
+				name:    "using correct args should NOT explode",
+				wantErr: false,
+				args: args{
+					accessToken:  newAccessToken,
+					refreshToken: newRefreshToken,
+					expiresAt:    times.Future(),
+				},
+			},
+			{
+				name:    "using a blank access token should explode",
+				wantErr: true,
+				args: args{
+					accessToken:  "",
+					refreshToken: newRefreshToken,
+					expiresAt:    times.Future(),
+				},
+			},
+			{
+				name:    "using a blank refresh token should explode",
+				wantErr: true,
+				args: args{
+					accessToken:  newAccessToken,
+					refreshToken: "",
+					expiresAt:    times.Future(),
+				},
+			},
+		}
+	)
+
+	for _, tb := range testBlocks {
+		t.Run(tb.name, func(t *testing.T) {
+			t.Parallel()
+
+			srv, err := server.New(t,
+				server.AssertRequest(false),
+			)
+			assert.NoError(t, err)
+			assert.NotNil(t, srv)
+
+			c := client.New(client.WithBaseURL(srv.URL))
+			assert.NotNil(t, c)
+
+			a := &API{client: c}
+
+			u, err := a.NewUserWithTokens(tb.args.accessToken, tb.args.refreshToken, tb.args.expiresAt)
+			assert.WantErr(t, tb.wantErr, err)
+			assert.NotNil(t, u)
+		})
+	}
+}
+
+func TestAPI_NewUserWithTokensAndExpiresIn(t *testing.T) {
+	t.Parallel()
+
+	var (
+		newAccessToken  = uuid.NewString()
+		newRefreshToken = uuid.NewString()
+
+		currentTime   = time.Date(2020, time.August, 26, 12, 0, 0, 0, time.UTC)
+		tokenDuration = 10 * time.Minute
+		wantExpiresIn = currentTime.Add(tokenDuration)
+	)
+
+	a, err := New(withNow(func() time.Time { return currentTime }))
+	assert.NotNil(t, a)
+	assert.NoError(t, err)
+
+	u, err := a.NewUserWithTokensAndExpiresIn(newAccessToken, newRefreshToken, tokenDuration)
+	assert.NotNil(t, u)
+	assert.NoError(t, err)
+
+	assert.Equal(t, u.token.Access(), newAccessToken)
+	assert.Equal(t, u.token.Refresh(), newRefreshToken)
+	assert.Equal(t, u.token.ExpiresAt(), wantExpiresIn)
 }
 
 func TestAPI_Refresh(t *testing.T) {
