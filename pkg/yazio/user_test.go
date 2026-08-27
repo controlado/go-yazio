@@ -258,14 +258,16 @@ func TestUser_AddFood(t *testing.T) {
 	var (
 		ctx        = context.Background()
 		testBlocks = []struct {
-			name         string
-			wantErr      bool
-			serverStatus int // default (success): StatusNoContent
-			food         food.Food
+			name           string
+			wantErr        bool
+			serverStatus   int // default (success): StatusNoContent
+			food           food.Food
+			foodVisibility visibility.Food
 		}{
 			{
-				name: "valid food",
-				food: validFood,
+				name:           "valid public food",
+				food:           validFood,
+				foodVisibility: visibility.PublicFood,
 			},
 			{
 				name:    "food missing nutrients",
@@ -275,18 +277,21 @@ func TestUser_AddFood(t *testing.T) {
 					invalidFood.Nutrients = food.Nutrients{}
 					return invalidFood
 				}(),
+				foodVisibility: visibility.PrivateFood,
 			},
 			{
-				name:         "server respond - StatusBadRequest",
-				wantErr:      true,
-				serverStatus: http.StatusBadRequest,
-				food:         validFood,
+				name:           "server respond - StatusBadRequest",
+				wantErr:        true,
+				serverStatus:   http.StatusBadRequest,
+				food:           validFood,
+				foodVisibility: visibility.PrivateFood,
 			},
 			{
-				name:         "server respond - StatusConflict",
-				wantErr:      true,
-				serverStatus: http.StatusConflict,
-				food:         validFood,
+				name:           "server respond - StatusConflict",
+				wantErr:        true,
+				serverStatus:   http.StatusConflict,
+				food:           validFood,
+				foodVisibility: visibility.PrivateFood,
 			},
 		}
 	)
@@ -302,6 +307,25 @@ func TestUser_AddFood(t *testing.T) {
 			srv, err := server.New(t,
 				server.AssertEndpoint(addFoodEndpoint),
 				server.AssertMethod(http.MethodPost),
+				server.AssertBody(map[string]any{
+					"id":         tb.food.ID.String(),
+					"name":       tb.food.Name,
+					"category":   tb.food.Category.String(),
+					"base_unit":  tb.food.BaseUnit.String(),
+					"is_private": tb.foodVisibility.IsPrivate(),
+					"nutrients": map[string]any{
+						"energy.energy":    10.0,
+						"nutrient.fat":     10.0,
+						"nutrient.protein": 10.0,
+						"nutrient.carb":    10.0,
+					},
+					"servings": []any{
+						map[string]any{
+							"serving": "piece",
+							"amount":  1.0,
+						},
+					},
+				}),
 				server.RespondHeaders(
 					map[string]string{
 						"Cache-Control": "no-cache, private",
@@ -331,7 +355,7 @@ func TestUser_AddFood(t *testing.T) {
 			err = u.AddFood(
 				ctx,
 				tb.food,
-				visibility.PrivateFood,
+				tb.foodVisibility,
 			)
 			assert.WantErr(t, tb.wantErr, err)
 		})

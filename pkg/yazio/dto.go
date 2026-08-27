@@ -192,7 +192,7 @@ func newAddFoodBody(f food.Food, vis visibility.Food) client.Payload[any] {
 		"name":       f.Name,
 		"category":   f.Category.String(),
 		"base_unit":  f.BaseUnit.String(),
-		"is_private": vis,
+		"is_private": vis.IsPrivate(),
 		"nutrients":  mapNutrients(f.Nutrients),
 		"servings":   mapServings(f.Servings),
 	}
