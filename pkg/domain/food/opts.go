@@ -19,11 +19,11 @@ func WithBaseUnit(b unit.Base) Option {
 	}
 }
 
-func WithNewServing(k ServingKind, amount float64) Option {
+func WithNewServing(k ServingKind, amountPerServing float64) Option {
 	return func(f *Food) {
 		s := Serving{
-			Kind:   k,
-			Amount: amount,
+			Kind:             k,
+			AmountPerServing: amountPerServing,
 		}
 		f.Servings = append(f.Servings, s)
 	}

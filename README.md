@@ -154,11 +154,14 @@ if err := user.AddFood(ctx, newFood, visibility.PrivateFood); err != nil {
 }
 
 var (
-    entryServing = food.Serving{Kind: food.Portion, Amount: 100}
+    entryServing    = food.Serving{Kind: food.Gram, AmountPerServing: 1}
+    servingQuantity = 25
 )
 
-if err := user.EntryFood(ctx, meal.Dinner, newFood.ID, entryServing); err != nil {
+if err := user.EntryFood(ctx, meal.Dinner, newFood.ID, entryServing, servingQuantity); err != nil {
     // yazio.ErrExpiredToken
+    // food.ErrInvalidServing
+    // food.ErrInvalidServingQuantity
     // yazio.ErrRequestingToYazio
     log.Fatalf("entering new food %s: %v", newFood, err)
 }

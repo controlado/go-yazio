@@ -3,6 +3,7 @@ package yazio
 import (
 	"context"
 	"fmt"
+	"math"
 	"net/http"
 	"time"
 
@@ -35,9 +36,11 @@ func (u *User) Token() application.Token {
 	return u.token
 }
 
-// EntryFood adds a food-intake to the authenticated user's diary.
+// EntryFood logs a food in today's diary.
 //
-// It always targets today, saving the [meal.Time] [food.ID] [food.Serving].
+// serving describes the selected measure and how much it represents in the
+// food's base unit. servingQuantity is the number of those measures consumed.
+// For example, two slices of 10 g are logged as 20 g.
 //
 //   - YAZIO does not validate the product ID:
 //
@@ -47,10 +50,18 @@ func (u *User) Token() application.Token {
 //
 // On failure the error wraps either:
 //   - [ErrExpiredToken]
+//   - [food.ErrInvalidServing]
+//   - [food.ErrInvalidServingQuantity]
 //   - [ErrRequestingToYazio]
-func (u *User) EntryFood(ctx context.Context, mealTime meal.Time, foodID food.ID, serving food.Serving) error {
+func (u *User) EntryFood(ctx context.Context, mealTime meal.Time, foodID food.ID, serving food.Serving, servingQuantity float64) error {
 	if u.token.IsExpired() {
 		return ErrExpiredToken
+	}
+	if serving.Kind == "" || !isPositiveFinite(serving.AmountPerServing) {
+		return food.ErrInvalidServing
+	}
+	if !isPositiveFinite(servingQuantity) {
+		return food.ErrInvalidServingQuantity
 	}
 
 	var (
@@ -58,21 +69,14 @@ func (u *User) EntryFood(ctx context.Context, mealTime meal.Time, foodID food.ID
 			Method:   http.MethodPost,
 			Endpoint: entryFoodEndpoint,
 			Headers:  defaultHeaders(u.token),
-			Body: client.Payload[any]{
-				"products": []map[string]any{
-					{
-						"id":               uuid.New(),
-						"date":             time.Now().Format(layoutDate),
-						"daytime":          mealTime,
-						"product_id":       foodID,
-						"serving":          serving.Kind,
-						"amount":           serving.Amount,
-						"serving_quantity": 1,
-					},
-				},
-				"simple_products": []any{},
-				"recipe_portions": []any{},
-			},
+			Body: newEntryFoodBody(
+				uuid.New(),
+				time.Now(),
+				mealTime,
+				foodID,
+				serving,
+				servingQuantity,
+			),
 		}
 	)
 
@@ -92,6 +96,28 @@ func (u *User) EntryFood(ctx context.Context, mealTime meal.Time, foodID food.ID
 	}
 
 	return nil
+}
+
+func isPositiveFinite(v float64) bool {
+	return v > 0 && !math.IsInf(v, 0)
+}
+
+func newEntryFoodBody(entryID uuid.UUID, at time.Time, mealTime meal.Time, foodID food.ID, serving food.Serving, servingQuantity float64) client.Payload[any] {
+	return client.Payload[any]{
+		"products": []map[string]any{
+			{
+				"id":               entryID,
+				"date":             at.Format(layoutDate),
+				"daytime":          mealTime,
+				"product_id":       foodID,
+				"serving":          serving.Kind,
+				"serving_quantity": servingQuantity,
+				"amount":           serving.AmountPerServing * servingQuantity,
+			},
+		},
+		"simple_products": []any{},
+		"recipe_portions": []any{},
+	}
 }
 
 // AddFood registers a new food (product) using the account.

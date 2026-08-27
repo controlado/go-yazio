@@ -70,8 +70,8 @@ func TestNew(t *testing.T) {
 				Nutrients: Nutrients{intake.Water: 0.1},
 				Servings: []Serving{
 					{
-						Kind:   Pack,
-						Amount: 50,
+						Kind:             Pack,
+						AmountPerServing: 50,
 					},
 				},
 			},

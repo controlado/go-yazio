@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	defaultServing = Serving{Kind: Portion, Amount: 100}
+	defaultServing = Serving{Kind: Portion, AmountPerServing: 100}
 )
 
 type (

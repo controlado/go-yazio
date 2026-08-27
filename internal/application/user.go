@@ -15,7 +15,7 @@ type User interface {
 	Token() Token
 	Data(context.Context) (user.Data, error)
 	AddFood(context.Context, food.Food, visibility.Food) error
-	EntryFood(context.Context, meal.Time, food.ID, food.Serving) error
+	EntryFood(context.Context, meal.Time, food.ID, food.Serving, float64) error
 	Macros(context.Context, date.Range) (intake.MacrosRange, error)
 	Intake(context.Context, intake.Kind, date.Range) (intake.SingleRange, error)
 }

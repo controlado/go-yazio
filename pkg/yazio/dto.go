@@ -179,7 +179,7 @@ func mapServings(servs []food.Serving) servingsDTO {
 	for i, s := range servs {
 		out[i] = servingDTO{
 			Type:   s.Kind.String(),
-			Amount: s.Amount,
+			Amount: s.AmountPerServing,
 		}
 	}
 

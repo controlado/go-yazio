@@ -2,6 +2,8 @@ package yazio
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"net/http"
 	"testing"
 	"time"
@@ -248,8 +250,8 @@ func TestUser_AddFood(t *testing.T) {
 			},
 			Servings: []food.Serving{
 				{
-					Kind:   food.Piece,
-					Amount: 1,
+					Kind:             food.Piece,
+					AmountPerServing: 1,
 				},
 			},
 		}
@@ -366,15 +368,16 @@ func TestUser_EntryFood(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		ctx     context.Context
-		meal    meal.Time
-		id      food.ID
-		serving food.Serving
+		ctx             context.Context
+		meal            meal.Time
+		id              food.ID
+		serving         food.Serving
+		servingQuantity float64
 	}
 
 	var ( // static
 		validFoodID  = uuid.New()
-		validServing = food.Serving{Kind: food.Portion, Amount: 100}
+		validServing = food.Serving{Kind: food.Portion, AmountPerServing: 100}
 		validToken   = &Token{expiresAt: times.Future(), access: "valid-access", refresh: "valid-refresh"}
 		expiredToken = &Token{expiresAt: times.Past(), access: "invalid-access", refresh: "invalid-refresh"}
 	)
@@ -382,6 +385,7 @@ func TestUser_EntryFood(t *testing.T) {
 	testBlocks := []struct {
 		name          string
 		wantErr       bool
+		wantNoRequest bool
 		respondStatus int
 		token         *Token
 		a             args
@@ -390,21 +394,63 @@ func TestUser_EntryFood(t *testing.T) {
 			name:  "valid path",
 			token: validToken,
 			a: args{
-				ctx:     context.Background(),
-				meal:    meal.Dinner,
-				id:      validFoodID,
-				serving: validServing,
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         validServing,
+				servingQuantity: 1,
 			},
 		},
 		{
-			name:    "expired token",
-			wantErr: true,
-			token:   expiredToken,
+			name:          "using a blank serving.Kind should explode",
+			wantErr:       true,
+			wantNoRequest: true,
+			token:         validToken,
 			a: args{
-				ctx:     context.Background(),
-				meal:    meal.Dinner,
-				id:      validFoodID,
-				serving: validServing,
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         food.Serving{Kind: "", AmountPerServing: 50},
+				servingQuantity: 1,
+			},
+		},
+		{
+			name:          "using a invalid serving.AmountPerServing (0) should explode",
+			wantErr:       true,
+			wantNoRequest: true,
+			token:         validToken,
+			a: args{
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         food.Serving{Kind: food.Gram, AmountPerServing: 0},
+				servingQuantity: 1,
+			},
+		},
+		{
+			name:          "using a invalid servingQuantity (0) should explode",
+			wantErr:       true,
+			wantNoRequest: true,
+			token:         validToken,
+			a: args{
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         validServing,
+				servingQuantity: 0,
+			},
+		},
+		{
+			name:          "expired token",
+			wantErr:       true,
+			wantNoRequest: true,
+			token:         expiredToken,
+			a: args{
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         validServing,
+				servingQuantity: 1,
 			},
 		},
 		{
@@ -413,10 +459,11 @@ func TestUser_EntryFood(t *testing.T) {
 			respondStatus: http.StatusUnauthorized,
 			token:         validToken, // to pass first check
 			a: args{
-				ctx:     context.Background(),
-				meal:    meal.Dinner,
-				id:      validFoodID,
-				serving: validServing,
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         validServing,
+				servingQuantity: 1,
 			},
 		},
 		{
@@ -425,10 +472,11 @@ func TestUser_EntryFood(t *testing.T) {
 			respondStatus: http.StatusConflict,
 			token:         validToken,
 			a: args{
-				ctx:     context.Background(),
-				meal:    meal.Dinner,
-				id:      validFoodID,
-				serving: validServing,
+				ctx:             context.Background(),
+				meal:            meal.Dinner,
+				id:              validFoodID,
+				serving:         validServing,
+				servingQuantity: 1,
 			},
 		},
 	}
@@ -444,6 +492,7 @@ func TestUser_EntryFood(t *testing.T) {
 			srv, err := server.New(t,
 				server.AssertMethod(http.MethodPost),
 				server.AssertEndpoint("/v20/user/consumed-items"),
+				server.AssertRequest(!tb.wantNoRequest),
 				server.RespondStatus(tb.respondStatus),
 			)
 			assert.NoError(t, err)
@@ -460,8 +509,83 @@ func TestUser_EntryFood(t *testing.T) {
 				tb.a.meal,
 				tb.a.id,
 				tb.a.serving,
+				tb.a.servingQuantity,
 			)
 			assert.WantErr(t, tb.wantErr, err)
+		})
+	}
+}
+
+func TestIsPositiveFinite(t *testing.T) {
+	t.Parallel()
+
+	testBlocks := []struct {
+		name  string
+		value float64
+		want  bool
+	}{
+		{name: "positive", value: 1, want: true},
+		{name: "zero", value: 0},
+		{name: "NaN", value: math.NaN()},
+		{name: "positive infinity", value: math.Inf(1)},
+	}
+
+	for _, tb := range testBlocks {
+		t.Run(tb.name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, isPositiveFinite(tb.value), tb.want)
+		})
+	}
+}
+
+func TestNewEntryFoodBody(t *testing.T) {
+	t.Parallel()
+
+	var (
+		entryID = uuid.New()
+		foodID  = uuid.New()
+		at      = time.Date(2026, 8, 26, 22, 9, 12, 0, time.Local)
+
+		servingCases = []struct {
+			servingKind      food.ServingKind
+			amountPerServing float64
+			servingQuantity  float64
+			wantAmount       float64
+		}{
+			{food.Gram, 1, 58, 58},
+			{food.Slice, 10, 2, 20},
+			{food.Cup, 237, 1.5, 355.5},
+			{food.Portion, 100, 2, 200},
+			{food.Portion, 100, 0.5, 50},
+			{food.Milliliter, 1, 250, 250},
+		}
+	)
+
+	for _, sc := range servingCases {
+		t.Run(fmt.Sprintf("%s %f x %f = %f", sc.servingKind, sc.amountPerServing, sc.servingQuantity, sc.wantAmount), func(t *testing.T) {
+			t.Parallel()
+
+			var (
+				serving = food.Serving{Kind: sc.servingKind, AmountPerServing: sc.amountPerServing}
+				got     = newEntryFoodBody(entryID, at, meal.Lunch, foodID, serving, sc.servingQuantity)
+				want    = client.Payload[any]{
+					"products": []map[string]any{
+						{
+							"id":               entryID,
+							"date":             at.Format(layoutDate),
+							"daytime":          meal.Lunch,
+							"product_id":       foodID,
+							"serving":          sc.servingKind,
+							"serving_quantity": sc.servingQuantity,
+							"amount":           sc.wantAmount,
+						},
+					},
+					"simple_products": []any{},
+					"recipe_portions": []any{},
+				}
+			)
+			assert.DeepEqual(t, got, want)
 		})
 	}
 }

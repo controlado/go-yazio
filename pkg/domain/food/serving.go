@@ -1,6 +1,8 @@
 package food
 
 const (
+	Gram       ServingKind = "gram"
+	Milliliter ServingKind = "milliliter"
 	Bar        ServingKind = "bar"
 	Teaspoon   ServingKind = "teaspoon"
 	Tablespoon ServingKind = "tablespoon"
@@ -16,11 +18,15 @@ const (
 	Each       ServingKind = "each"
 )
 
-// Serving describes a specific quantity
-// or measure of a food item.
+// Serving describes a specific quantity or
+// measure of a food item.
+//
+// AmountPerServing represents the quantity
+// in [Food.BaseUnit] represented by one
+// unit of [Serving.Kind].
 type Serving struct {
-	Kind   ServingKind
-	Amount float64
+	Kind             ServingKind
+	AmountPerServing float64
 }
 
 type ServingKind string
