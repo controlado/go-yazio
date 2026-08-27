@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/controlado/go-yazio/internal/infra/client"
-	"github.com/controlado/go-yazio/pkg/domain/food"
-	"github.com/controlado/go-yazio/pkg/domain/intake"
-	"github.com/controlado/go-yazio/pkg/domain/user"
-	"github.com/controlado/go-yazio/pkg/visibility"
+	"github.com/controlado/go-yazio/v2/internal/infra/client"
+	"github.com/controlado/go-yazio/v2/pkg/domain/food"
+	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v2/pkg/domain/user"
+	"github.com/controlado/go-yazio/v2/pkg/visibility"
 	"github.com/google/uuid"
 )
 

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/controlado/go-yazio/internal/application"
-	"github.com/controlado/go-yazio/internal/infra/client"
+	"github.com/controlado/go-yazio/v2/internal/application"
+	"github.com/controlado/go-yazio/v2/internal/infra/client"
 )
 
 // API is the main struct for interacting with the YAZIO API.

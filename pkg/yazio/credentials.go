@@ -1,6 +1,6 @@
 package yazio
 
-import "github.com/controlado/go-yazio/internal/application"
+import "github.com/controlado/go-yazio/v2/internal/application"
 
 type grantType string
 

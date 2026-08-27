@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/controlado/go-yazio/internal/testutil/assert"
-	"github.com/controlado/go-yazio/pkg/domain/intake"
-	"github.com/controlado/go-yazio/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v2/pkg/domain/unit"
 	"github.com/google/uuid"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/controlado/go-yazio/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
 )
 
 func TestResponse_BodyString(t *testing.T) {
