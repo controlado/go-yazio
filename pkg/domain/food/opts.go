@@ -1,7 +1,7 @@
 package food
 
 import (
-	"github.com/controlado/go-yazio/v3/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v4/pkg/domain/unit"
 	"github.com/google/uuid"
 )
 

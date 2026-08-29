@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
 )
 
 func TestSingleRange_Average(t *testing.T) {

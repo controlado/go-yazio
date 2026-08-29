@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/controlado/go-yazio/v3/internal/infra/client"
-	"github.com/controlado/go-yazio/v3/pkg/domain/date"
-	"github.com/controlado/go-yazio/v3/pkg/domain/food"
-	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v3/pkg/domain/meal"
-	"github.com/controlado/go-yazio/v3/pkg/domain/user"
-	"github.com/controlado/go-yazio/v3/pkg/visibility"
+	"github.com/controlado/go-yazio/v4/internal/infra/client"
+	"github.com/controlado/go-yazio/v4/pkg/domain/date"
+	"github.com/controlado/go-yazio/v4/pkg/domain/food"
+	"github.com/controlado/go-yazio/v4/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v4/pkg/domain/meal"
+	"github.com/controlado/go-yazio/v4/pkg/domain/user"
+	"github.com/controlado/go-yazio/v4/pkg/visibility"
 	"github.com/google/uuid"
 )
 
