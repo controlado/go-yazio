@@ -615,35 +615,33 @@ func TestNewEntryFoodBody(t *testing.T) {
 		at      = time.Date(2026, 8, 26, 22, 9, 12, 0, time.Local)
 
 		servingCases = []struct {
-			servingKind      food.ServingKind
-			amountPerServing float64
-			servingQuantity  float64
-			wantAmount       float64
+			serving         food.Serving
+			servingQuantity float64
+			wantAmount      float64
 		}{
-			{food.Gram, 1, 58, 58},
-			{food.Slice, 10, 2, 20},
-			{food.Cup, 237, 1.5, 355.5},
-			{food.Portion, 100, 2, 200},
-			{food.Portion, 100, 0.5, 50},
-			{food.Milliliter, 1, 250, 250},
+			{food.Serving{Kind: food.Gram, AmountPerServing: 1}, 50, 50},
+			{food.Serving{Kind: food.Milliliter, AmountPerServing: 1}, 250, 250},
+			{food.Serving{Kind: food.Slice, AmountPerServing: 10}, 2, 20},
+			{food.Serving{Kind: food.Cup, AmountPerServing: 237}, 1.5, 355.5},
+			{food.Serving{Kind: food.Portion, AmountPerServing: 100}, 0.5, 50},
 		}
 	)
 
 	for _, sc := range servingCases {
-		t.Run(fmt.Sprintf("%s %f x %f = %f", sc.servingKind, sc.amountPerServing, sc.servingQuantity, sc.wantAmount), func(t *testing.T) {
+		name := fmt.Sprintf("%s %g x %g = %g", sc.serving.Kind, sc.serving.AmountPerServing, sc.servingQuantity, sc.wantAmount)
+		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			var (
-				serving = food.Serving{Kind: sc.servingKind, AmountPerServing: sc.amountPerServing}
-				got     = newEntryFoodBody(entryID, at, meal.Lunch, foodID, serving, sc.servingQuantity)
-				want    = client.Payload[any]{
+				got  = newEntryFoodBody(entryID, at, meal.Lunch, foodID, sc.serving, sc.servingQuantity)
+				want = client.Payload[any]{
 					"products": []map[string]any{
 						{
 							"id":               entryID,
 							"date":             at.Format(layoutDate),
 							"daytime":          meal.Lunch,
 							"product_id":       foodID,
-							"serving":          sc.servingKind,
+							"serving":          sc.serving.Kind,
 							"serving_quantity": sc.servingQuantity,
 							"amount":           sc.wantAmount,
 						},
