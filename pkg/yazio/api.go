@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/controlado/go-yazio/v3/internal/application"
 	"github.com/controlado/go-yazio/v3/internal/infra/client"
 )
 
@@ -34,7 +33,11 @@ func New(opts ...Option) (*API, error) {
 	return defaultAPI, nil
 }
 
-func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
+func (a *API) Refresh(ctx context.Context, currentUser *User) error {
+	if currentUser == nil {
+		return ErrUserCannotBeNil
+	}
+
 	currentToken := currentUser.Token()
 	if !currentToken.IsExpired() { // double-checking
 		return nil
@@ -47,9 +50,7 @@ func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
 	}
 
 	newToken := newUser.Token()
-	currentToken.Update(newToken)
-
-	return nil
+	return currentToken.Update(newToken)
 }
 
 // Login attempts to log in a user with the provided cred.
@@ -58,11 +59,16 @@ func (a *API) Refresh(ctx context.Context, currentUser application.User) error {
 // upon successful login, or an error if the login fails.
 //
 // On failure the error wraps either:
+//   - [ErrCredentialsCannotBeNil]
 //   - [ErrInvalidCredentials]
 //   - [ErrRequestingToYazio]
 //   - [ErrDecodingResponse]
 //   - Other: generic (DTO related)
-func (a *API) Login(ctx context.Context, cred application.Credentials) (*User, error) {
+func (a *API) Login(ctx context.Context, cred Credentials) (*User, error) {
+	if cred == nil {
+		return nil, ErrCredentialsCannotBeNil
+	}
+
 	var (
 		dto loginDTO
 		req = client.Request{

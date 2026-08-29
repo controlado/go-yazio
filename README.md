@@ -46,9 +46,10 @@ if err != nil {
 cred := yazio.NewPasswordCred(username, password)
 user, err := api.Login(ctx, cred)
 if err != nil {
+    // yazio.ErrCredentialsCannotBeNil
+    // yazio.ErrInvalidCredentials
     // yazio.ErrRequestingToYazio
     // yazio.ErrDecodingResponse
-    // yazio.ErrInvalidCredentials
     log.Fatalf("fetching user from api: %v", err)
 }
 ```

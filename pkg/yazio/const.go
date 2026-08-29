@@ -1,11 +1,10 @@
 package yazio
 
 import (
-	"github.com/controlado/go-yazio/v3/internal/application"
 	"github.com/controlado/go-yazio/v3/internal/infra/client"
 )
 
-func defaultHeaders(tk application.Token) client.Payload[string] {
+func defaultHeaders(tk *Token) client.Payload[string] {
 	headers := client.Payload[string]{
 		`accept`:         `*/*`,
 		`accept-charset`: `UTF-8`,

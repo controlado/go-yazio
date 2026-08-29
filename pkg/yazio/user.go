@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/controlado/go-yazio/v3/internal/application"
 	"github.com/controlado/go-yazio/v3/internal/infra/client"
 	"github.com/controlado/go-yazio/v3/pkg/domain/date"
 	"github.com/controlado/go-yazio/v3/pkg/domain/food"
@@ -25,14 +24,14 @@ import (
 // instant, plus the refresh token needed to renew credentials.
 //
 // The zero value is not functional; obtain a User through the
-// login flow provided in application.API.
+// login flow provided in [API].
 type User struct {
 	client *client.Client
-	token  application.Token
+	token  *Token
 }
 
-// Token returns the [application.Token] held by u.
-func (u *User) Token() application.Token {
+// Token returns the [Token] held by u.
+func (u *User) Token() *Token {
 	return u.token
 }
 

@@ -1,6 +1,8 @@
 package yazio
 
-import "github.com/controlado/go-yazio/v3/internal/application"
+type Credentials interface {
+	Body() map[string]any
+}
 
 type grantType string
 
@@ -14,7 +16,7 @@ type refreshToken struct {
 	refreshTokenValue string
 }
 
-func newRefreshCred(tk application.Token) application.Credentials {
+func newRefreshCred(tk *Token) Credentials {
 	return &refreshToken{
 		refreshTokenValue: tk.Refresh(),
 	}
@@ -37,8 +39,8 @@ type usingPassword struct {
 // for password-based authentication.
 //
 // It takes the username and password as input
-// and returns an [application.Credentials] interface.
-func NewPasswordCred(username, password string) application.Credentials {
+// and returns an [Credentials] interface.
+func NewPasswordCred(username, password string) Credentials {
 	return &usingPassword{
 		username: username,
 		password: password,

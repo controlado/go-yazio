@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/controlado/go-yazio/v3/internal/application"
 )
 
 type Token struct {
@@ -25,13 +23,19 @@ func (t *Token) String() string {
 	return fmt.Sprintf("Token(%v)", tokenStatus)
 }
 
-func (t *Token) Update(newToken application.Token) {
+func (t *Token) Update(newToken *Token) error {
+	if newToken == nil {
+		return ErrTokenCannotBeNil
+	}
+
 	t.Lock()
 	defer t.Unlock()
 
 	t.expiresAt = newToken.ExpiresAt()
 	t.access = newToken.Access()
 	t.refresh = newToken.Refresh()
+
+	return nil
 }
 
 func (t *Token) ExpiresAt() time.Time {

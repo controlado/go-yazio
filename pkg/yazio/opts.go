@@ -1,16 +1,21 @@
 package yazio
 
 import (
+	"net/http"
 	"time"
-
-	"github.com/controlado/go-yazio/v3/internal/infra/client"
 )
 
 type Option func(a *API)
 
-func WithRequester(r client.Requester) Option {
+type Requester interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+func WithRequester(r Requester) Option {
 	return func(a *API) {
-		a.client.Requester = r
+		if r != nil {
+			a.client.Requester = r
+		}
 	}
 }
 

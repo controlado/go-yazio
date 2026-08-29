@@ -91,25 +91,40 @@ func TestToken_Update(t *testing.T) {
 	t.Parallel()
 
 	var (
-		currentToken = &Token{
-			expiresAt: times.Future(),
-			access:    uuid.NewString(),
-			refresh:   uuid.NewString(),
+		newValidToken = func() *Token {
+			return &Token{
+				expiresAt: times.Future(),
+				access:    uuid.NewString(),
+				refresh:   uuid.NewString(),
+			}
 		}
-		newToken = &Token{
-			expiresAt: times.Future(),
-			access:    uuid.NewString(),
-			refresh:   uuid.NewString(),
+
+		testBlocks = []struct {
+			name     string
+			wantErr  error
+			newToken *Token
+		}{
+			{name: "using a valid new token", wantErr: nil, newToken: newValidToken()},
+			{name: "using nil new token", wantErr: ErrTokenCannotBeNil, newToken: nil},
 		}
 	)
 
-	var (
-		got  = currentToken
-		want = newToken
-	)
+	for _, tb := range testBlocks {
+		t.Run(tb.name, func(t *testing.T) {
+			t.Parallel()
 
-	currentToken.Update(newToken)
-	assert.DeepEqual(t, got, want)
+			tk := newValidToken()
+			tkBearerSnapshot := tk.Bearer()
+
+			err := tk.Update(tb.newToken)
+			if tb.wantErr != nil {
+				assert.Equal(t, err, tb.wantErr)
+				assert.DeepEqual(t, tk.Bearer(), tkBearerSnapshot)
+				return
+			}
+			assert.DeepEqual(t, tk, tb.newToken)
+		})
+	}
 }
 
 func TestToken_String(t *testing.T) {

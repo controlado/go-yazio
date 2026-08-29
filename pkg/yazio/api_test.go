@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v3/internal/application"
 	"github.com/controlado/go-yazio/v3/internal/infra/client"
 	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
 	"github.com/controlado/go-yazio/v3/internal/testutil/server"
@@ -22,7 +21,7 @@ func TestNew(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestYazio_Login(t *testing.T) {
+func TestAPI_Login(t *testing.T) {
 	t.Parallel()
 
 	const (
@@ -54,6 +53,19 @@ func TestYazio_Login(t *testing.T) {
 	user, err := api.Login(ctx, cred)
 	assert.NotNil(t, user)
 	assert.NoError(t, err)
+}
+
+func TestAPI_Login_WithNilCredentials(t *testing.T) {
+	t.Parallel()
+
+	a, err := New()
+	assert.NotNil(t, a)
+	assert.NoError(t, err)
+
+	ctx := context.Background()
+	user, err := a.Login(ctx, nil)
+	assert.Nil(t, user)
+	assert.Equal(t, err, ErrCredentialsCannotBeNil)
 }
 
 func TestAPI_NewUserWithTokens(t *testing.T) {
@@ -161,7 +173,7 @@ func TestAPI_Refresh(t *testing.T) {
 			wantErr      bool
 			wantUpdate   bool
 			ServerStatus int
-			token        application.Token
+			token        *Token
 		}{
 			{
 				name:       "using expired token should update",
@@ -237,4 +249,16 @@ func TestAPI_Refresh(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAPI_Refresh_WithNilUser(t *testing.T) {
+	t.Parallel()
+
+	a, err := New()
+	assert.NotNil(t, a)
+	assert.NoError(t, err)
+
+	ctx := context.Background()
+	err = a.Refresh(ctx, nil)
+	assert.Equal(t, err, ErrUserCannotBeNil)
 }
