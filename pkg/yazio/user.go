@@ -121,7 +121,13 @@ func newEntryFoodBody(entryID uuid.UUID, at time.Time, mealTime meal.Time, foodI
 
 // AddFood registers a new food (product) using the account.
 //
-// AddFood doesn't entry a new intake. Just regist a new food.
+// A successful call confirms that the food was registered on YAZIO's servers.
+// Some versions of the YAZIO app keep a local product catalog and may not show
+// foods created by external clients in search until that catalog is refreshed.
+// Creating a product in the app was observed to trigger this refresh. There is
+// no known API endpoint that forces it.
+//
+// AddFood does not create an intake entry. Use [User.EntryFood] to log the food.
 //
 // On failure the error wraps either:
 //   - [ErrExpiredToken]

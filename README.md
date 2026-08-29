@@ -172,6 +172,23 @@ if err := user.EntryFood(ctx, meal.Dinner, newFood.ID, entryServing, servingQuan
 
 </details>
 
+## FAQ
+
+<details>
+    <summary>
+        <strong>Why doesn't a food registered with <code>AddFood</code> appear immediately in the app search?</strong>
+    </summary>
+
+`AddFood` registers the food on YAZIO's servers, but some versions of the app
+keep a local product catalog that is not refreshed when an external client adds
+a food. In our testing, creating another product in the app refreshed the
+catalog and made externally created foods searchable. Restarting the app,
+clearing its cache, or logging the food did not reliably refresh the catalog.
+
+There is currently no known API endpoint to force this refresh.
+
+</details>
+
 ## Features
 
 * Login with password
