@@ -69,7 +69,6 @@ func WantErr(t testing.TB, want bool, err error) {
 		if err == nil {
 			t.Fatal("\nwant err\ngot nil")
 		}
-		t.SkipNow()
 	} else {
 		if err != nil {
 			t.Fatalf("\nwant nil err\ngot: %v", err)

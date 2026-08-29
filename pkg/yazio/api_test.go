@@ -131,7 +131,11 @@ func TestAPI_NewUserWithTokens(t *testing.T) {
 
 			u, err := a.NewUserWithTokens(tb.args.accessToken, tb.args.refreshToken, tb.args.expiresAt)
 			assert.WantErr(t, tb.wantErr, err)
-			assert.NotNil(t, u)
+			if tb.wantErr {
+				assert.Nil(t, u)
+			} else {
+				assert.NotNil(t, u)
+			}
 		})
 	}
 }
@@ -227,9 +231,11 @@ func TestAPI_Refresh(t *testing.T) {
 			assert.NotNil(t, c)
 
 			var (
-				ctx = context.Background()
-				u   = &User{client: c, token: tb.token}
-				a   = &API{client: c}
+				ctx            = context.Background()
+				u              = &User{client: c, token: tb.token}
+				a              = &API{client: c}
+				initialAccess  = u.token.Access()
+				initialRefresh = u.token.Refresh()
 			)
 
 			err = a.Refresh(ctx, u)
@@ -244,8 +250,8 @@ func TestAPI_Refresh(t *testing.T) {
 				assert.Equal(t, userAccess, newAccessToken)
 				assert.Equal(t, userRefresh, newRefreshToken)
 			} else {
-				assert.Equal(t, userAccess, randomToken)
-				assert.Equal(t, userRefresh, randomToken)
+				assert.Equal(t, userAccess, initialAccess)
+				assert.Equal(t, userRefresh, initialRefresh)
 			}
 		})
 	}
