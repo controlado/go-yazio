@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,14 +36,14 @@ type Response struct {
 	*http.Response
 }
 
-func (r *Response) check() error {
+func (r *Response) check() (err error) {
 	statusCat := statusCategory(r.StatusCode / 100)
 
 	switch statusCat {
 	case Informational, Success, Redirection:
 		return nil
 	default:
-		defer r.Body.Close()
+		defer closeAndJoin(r.Body, &err)
 
 		buffer, _ := io.ReadAll(r.Body)
 		bufReader := bytes.NewReader(buffer)
@@ -58,7 +59,7 @@ func (r *Response) check() error {
 }
 
 func (r *Response) BodyString() (body string, err error) {
-	defer func() { err = r.Body.Close() }()
+	defer closeAndJoin(r.Body, &err)
 
 	if r.ContentLength == 0 {
 		return body, nil
@@ -66,22 +67,25 @@ func (r *Response) BodyString() (body string, err error) {
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		return body, fmt.Errorf("reading body: %w", err)
+		return body, err
 	}
 
 	return string(bodyBytes), nil
 }
 
 func (r *Response) BodyStruct(s any) (err error) {
-	defer func() { err = r.Body.Close() }()
+	defer closeAndJoin(r.Body, &err)
 
 	if r.ContentLength == 0 {
 		return nil
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(s); err != nil {
-		return fmt.Errorf("decoding body to struct: %w", err)
-	}
+	return json.NewDecoder(r.Body).Decode(s)
+}
 
-	return nil
+func closeAndJoin(c io.Closer, err *error) {
+	if closeErr := c.Close(); closeErr != nil {
+		closeErr = fmt.Errorf("closing response body: %w", closeErr)
+		*err = errors.Join(*err, closeErr)
+	}
 }
