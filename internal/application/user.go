@@ -3,12 +3,12 @@ package application
 import (
 	"context"
 
-	"github.com/controlado/go-yazio/v2/pkg/domain/date"
-	"github.com/controlado/go-yazio/v2/pkg/domain/food"
-	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v2/pkg/domain/meal"
-	"github.com/controlado/go-yazio/v2/pkg/domain/user"
-	"github.com/controlado/go-yazio/v2/pkg/visibility"
+	"github.com/controlado/go-yazio/v3/pkg/domain/date"
+	"github.com/controlado/go-yazio/v3/pkg/domain/food"
+	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v3/pkg/domain/meal"
+	"github.com/controlado/go-yazio/v3/pkg/domain/user"
+	"github.com/controlado/go-yazio/v3/pkg/visibility"
 )
 
 type User interface {

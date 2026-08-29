@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/controlado/go-yazio/v2/internal/application"
+	"github.com/controlado/go-yazio/v3/internal/application"
 )
 
 type Token struct {

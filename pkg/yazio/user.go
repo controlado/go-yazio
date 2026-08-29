@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/controlado/go-yazio/v2/internal/application"
-	"github.com/controlado/go-yazio/v2/internal/infra/client"
-	"github.com/controlado/go-yazio/v2/pkg/domain/date"
-	"github.com/controlado/go-yazio/v2/pkg/domain/food"
-	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v2/pkg/domain/meal"
-	"github.com/controlado/go-yazio/v2/pkg/domain/user"
-	"github.com/controlado/go-yazio/v2/pkg/visibility"
+	"github.com/controlado/go-yazio/v3/internal/application"
+	"github.com/controlado/go-yazio/v3/internal/infra/client"
+	"github.com/controlado/go-yazio/v3/pkg/domain/date"
+	"github.com/controlado/go-yazio/v3/pkg/domain/food"
+	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v3/pkg/domain/meal"
+	"github.com/controlado/go-yazio/v3/pkg/domain/user"
+	"github.com/controlado/go-yazio/v3/pkg/visibility"
 	"github.com/google/uuid"
 )
 
@@ -129,9 +129,13 @@ func newEntryFoodBody(entryID uuid.UUID, at time.Time, mealTime meal.Time, foodI
 //   - [ErrRequestingToYazio]
 //   - [food.ErrAlreadyExists]
 //   - [food.ErrMissingNutrients] f [food.Food] nutrients must have [intake.Energy] [intake.Fat] [intake.Protein] [intake.Carb]
+//   - [food.ErrInvalidNutrientReferenceAmount]
 func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) error {
 	if u.token.IsExpired() {
 		return ErrExpiredToken
+	}
+	if !isPositiveFinite(f.NutrientReferenceAmount) {
+		return food.ErrInvalidNutrientReferenceAmount
 	}
 
 	requiredNutrients := []intake.Kind{

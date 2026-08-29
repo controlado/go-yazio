@@ -3,9 +3,9 @@
     <p>Unofficial Go client for accessing the <a href="https://www.yazio.com/" rel="noopener noreferrer">YAZIO</a> API</p>
     <p>
         <a href="https://github.com/controlado/go-yazio/actions/workflows/test.yml"><img alt="badge: actions-tests" src="https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg"></a>
-        <a href="https://goreportcard.com/report/github.com/controlado/go-yazio/v2"><img alt="badge: go-report-card" src="https://goreportcard.com/badge/github.com/controlado/go-yazio/v2?style=default"></a>
+        <a href="https://goreportcard.com/report/github.com/controlado/go-yazio/v3"><img alt="badge: go-report-card" src="https://goreportcard.com/badge/github.com/controlado/go-yazio/v3?style=default"></a>
         <a href="https://codecov.io/gh/controlado/go-yazio"><img alt="badge: codecov" src="https://codecov.io/gh/controlado/go-yazio/branch/main/graph/badge.svg?token=Fgo4zed2G1"></a>
-        <a href="https://pkg.go.dev/github.com/controlado/go-yazio/v2"><img alt="badge: pkg-reference" src="https://img.shields.io/static/v1?logo=go&label=Reference&message=go-yazio&color=0476b7&style=default"></a>
+        <a href="https://pkg.go.dev/github.com/controlado/go-yazio/v3"><img alt="badge: pkg-reference" src="https://img.shields.io/static/v1?logo=go&label=Reference&message=go-yazio&color=0476b7&style=default"></a>
         <a href="https://wakatime.com/badge/github/controlado/go-yazio"><img alt="badge: wakatime" src="https://wakatime.com/badge/github/controlado/go-yazio.svg?style=default"></a>
     </p>
 </div>
@@ -18,7 +18,7 @@ Expect breaking changes at any time
 ## Installation
 
 ```bash
-go get github.com/controlado/go-yazio/v2
+go get github.com/controlado/go-yazio/v3
 ```
 
 ## Usage examples
@@ -129,18 +129,18 @@ if err != nil {
     </summary>
 
 ```go
-var (
-    foodName = "Banana"
-    foodCat  = food.Miscellaneous
-    foodNuts = food.Nutrients{ // required nutrients
-        intake.Energy:  0.1,
-        intake.Fat:     0.1,
-        intake.Protein: 0.1,
-        intake.Carb:    0.1,
-    }
+newFood, err := food.New(
+    "Sweet popcorn",
+    food.Miscellaneous,
+    food.Nutrients{
+        intake.Energy:  62,
+        intake.Fat:     0,
+        intake.Protein: 1,
+        intake.Carb:    14,
+    },
+    food.WithNutrientsPer(18),
+    food.WithNewServing(food.Portion, 18),
 )
-
-newFood, err := food.New(foodName, foodCat, foodNuts)
 if err != nil { // food.ErrInvalidName
     log.Fatalf("creating a new food: %v", err)
 }
@@ -148,14 +148,15 @@ if err != nil { // food.ErrInvalidName
 if err := user.AddFood(ctx, newFood, visibility.PrivateFood); err != nil {
     // yazio.ErrExpiredToken
     // yazio.ErrRequestingToYazio
-    // food.ErrMissingNutrients
     // food.ErrAlreadyExists
+    // food.ErrMissingNutrients
+    // food.ErrInvalidNutrientReferenceAmount
     log.Fatalf("adding new food %s: %v", newFood, err)
 }
 
 var (
-    entryServing    = food.Serving{Kind: food.Gram, AmountPerServing: 1}
-    servingQuantity = 25
+    entryServing    = food.Serving{Kind: food.Portion, AmountPerServing: 18}
+    servingQuantity = 1
 )
 
 if err := user.EntryFood(ctx, meal.Dinner, newFood.ID, entryServing, servingQuantity); err != nil {

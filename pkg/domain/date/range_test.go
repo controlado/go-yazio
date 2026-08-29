@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
 )
 
 func TestRange_String(t *testing.T) {

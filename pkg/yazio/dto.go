@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/controlado/go-yazio/v2/internal/infra/client"
-	"github.com/controlado/go-yazio/v2/pkg/domain/food"
-	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v2/pkg/domain/user"
-	"github.com/controlado/go-yazio/v2/pkg/visibility"
+	"github.com/controlado/go-yazio/v3/internal/infra/client"
+	"github.com/controlado/go-yazio/v3/pkg/domain/food"
+	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v3/pkg/domain/user"
+	"github.com/controlado/go-yazio/v3/pkg/visibility"
 	"github.com/google/uuid"
 )
 
@@ -148,7 +148,7 @@ type (
 	}
 )
 
-func mapNutrients(nuts map[intake.Kind]float64) map[string]float64 {
+func mapNutrients(nuts map[intake.Kind]float64, referenceAmount float64) map[string]float64 {
 	var (
 		nutsLength = len(nuts)
 		out        = make(map[string]float64, nutsLength)
@@ -160,7 +160,7 @@ func mapNutrients(nuts map[intake.Kind]float64) map[string]float64 {
 
 	for kind, value := range nuts {
 		nutrientID := kind.ID()
-		out[nutrientID] = value
+		out[nutrientID] = value / referenceAmount
 	}
 
 	return out
@@ -193,7 +193,7 @@ func newAddFoodBody(f food.Food, vis visibility.Food) client.Payload[any] {
 		"category":   f.Category.String(),
 		"base_unit":  f.BaseUnit.String(),
 		"is_private": vis.IsPrivate(),
-		"nutrients":  mapNutrients(f.Nutrients),
+		"nutrients":  mapNutrients(f.Nutrients, f.NutrientReferenceAmount),
 		"servings":   mapServings(f.Servings),
 	}
 }

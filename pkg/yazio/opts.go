@@ -3,7 +3,7 @@ package yazio
 import (
 	"time"
 
-	"github.com/controlado/go-yazio/v2/internal/infra/client"
+	"github.com/controlado/go-yazio/v3/internal/infra/client"
 )
 
 type Option func(a *API)

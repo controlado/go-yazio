@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v2/internal/testutil/server"
+	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v3/internal/testutil/server"
 )
 
 func TestNew(t *testing.T) {

@@ -3,13 +3,15 @@ package food
 import (
 	"fmt"
 
-	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v2/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v3/pkg/domain/unit"
 	"github.com/google/uuid"
 )
 
 const (
 	nameMinLength = 3
+
+	defaultNutrientReferenceAmount = 100
 )
 
 var (
@@ -23,8 +25,8 @@ type (
 	// Nutrients represents a map of nutrient kinds to their respective values.
 	//
 	// The key is an [intake.Kind] (e.g., protein, carbohydrates, fat, energy)
-	// and the value is a float64 representing the amount of that nutrient,
-	// typically per 100 units of the food's [BaseUnit] (e.g., 100g or 100ml).
+	// and the value is the amount of that nutrient in
+	// [Food.NutrientReferenceAmount] units of [Food.BaseUnit].
 	Nutrients map[intake.Kind]float64
 
 	// Food represents a food item, detailing its identification, nutritional
@@ -35,12 +37,13 @@ type (
 	// food category. The Nutrients field provides a breakdown of its nutritional
 	// content, and Servings lists predefined ways the food can be measured or logged.
 	Food struct {
-		ID        ID        // ID is the unique identifier for the food item.
-		Name      string    // Name is the descriptive name of the food item.
-		BaseUnit  unit.Base // BaseUnit specifies the food fundamental unit of measurement.
-		Category  Category  // Category classifies the food item; [Meat] [Miscellaneous]...
-		Nutrients Nutrients // Nutrients holds the nutritional composition of the food.
-		Servings  []Serving // Servings lists the food predefined serving sizes; [Bottle]...
+		ID                      ID        // ID is the unique identifier for the food item.
+		Name                    string    // Name is the descriptive name of the food item.
+		BaseUnit                unit.Base // BaseUnit specifies the food fundamental unit of measurement.
+		Category                Category  // Category classifies the food item; [Meat] [Miscellaneous]...
+		Nutrients               Nutrients // Nutrients holds the nutritional composition of the food.
+		NutrientReferenceAmount float64   // NutrientReferenceAmount is the quantity of BaseUnit represented by Nutrients.
+		Servings                []Serving // Servings lists the food predefined serving sizes; [Bottle]...
 	}
 )
 
@@ -49,11 +52,12 @@ type (
 // It initializes the food with the provided name, cat [Category], and
 // nut [Nutrients]. Optional [Option] functions can be passed to customize
 // the food item further, such as setting a specific [BaseUnit] or adding
-// custom [Serving] sizes.
+// custom [Serving] sizes or changing the nutrient reference amount with
+// [WithNutrientsPer].
 //
 // If no serving options are provided, a default serving (e.g., 100g portion)
-// is automatically added to the food item. The default [BaseUnit] is [Grams]
-// unless overridden by an [Option].
+// is automatically added to the food item. The default BaseUnit is
+// [unit.Gram], and NutrientReferenceAmount defaults to 100.
 //
 // On failure the error wraps either:
 //   - [ErrInvalidName] if name length is less than 3 characters
@@ -63,12 +67,13 @@ func New(name string, cat Category, nut Nutrients, opts ...Option) (f Food, err 
 	}
 
 	f = Food{
-		ID:        uuid.New(),
-		Name:      name,
-		BaseUnit:  unit.Gram,
-		Category:  cat,
-		Nutrients: nut,
-		Servings:  []Serving{},
+		ID:                      uuid.New(),
+		Name:                    name,
+		BaseUnit:                unit.Gram,
+		Category:                cat,
+		Nutrients:               nut,
+		NutrientReferenceAmount: defaultNutrientReferenceAmount,
+		Servings:                []Serving{},
 	}
 
 	for _, opt := range opts {

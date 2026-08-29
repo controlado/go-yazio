@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v2/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v3/pkg/domain/unit"
 	"github.com/google/uuid"
 )
 
@@ -42,16 +42,17 @@ func TestNew(t *testing.T) {
 				},
 			},
 			want: Food{
-				ID:        staticUUID,
-				Name:      "Banana",
-				BaseUnit:  unit.Gram,
-				Category:  Miscellaneous,
-				Nutrients: Nutrients{intake.AddedSugar: 0.1},
-				Servings:  []Serving{defaultServing},
+				ID:                      staticUUID,
+				Name:                    "Banana",
+				BaseUnit:                unit.Gram,
+				Category:                Miscellaneous,
+				Nutrients:               Nutrients{intake.AddedSugar: 0.1},
+				NutrientReferenceAmount: defaultNutrientReferenceAmount,
+				Servings:                []Serving{defaultServing},
 			},
 		},
 		{
-			name: "using options: defining unit/serving",
+			name: "using options: defining unit/serving/nutrient reference",
 			args: args{
 				name: "Liquid",
 				cat:  Miscellaneous,
@@ -59,15 +60,17 @@ func TestNew(t *testing.T) {
 				opts: []Option{
 					WithID(staticUUID),
 					WithBaseUnit(unit.Milliliter),
+					WithNutrientsPer(18),
 					WithNewServing(Pack, 50),
 				},
 			},
 			want: Food{
-				ID:        staticUUID,
-				Name:      "Liquid",
-				BaseUnit:  unit.Milliliter,
-				Category:  Miscellaneous,
-				Nutrients: Nutrients{intake.Water: 0.1},
+				ID:                      staticUUID,
+				Name:                    "Liquid",
+				BaseUnit:                unit.Milliliter,
+				Category:                Miscellaneous,
+				Nutrients:               Nutrients{intake.Water: 0.1},
+				NutrientReferenceAmount: 18,
 				Servings: []Serving{
 					{
 						Kind:             Pack,

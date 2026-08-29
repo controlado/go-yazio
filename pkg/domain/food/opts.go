@@ -1,7 +1,7 @@
 package food
 
 import (
-	"github.com/controlado/go-yazio/v2/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v3/pkg/domain/unit"
 	"github.com/google/uuid"
 )
 
@@ -16,6 +16,12 @@ func WithID(i uuid.UUID) Option {
 func WithBaseUnit(b unit.Base) Option {
 	return func(f *Food) {
 		f.BaseUnit = b
+	}
+}
+
+func WithNutrientsPer(amount float64) Option {
+	return func(f *Food) {
+		f.NutrientReferenceAmount = amount
 	}
 }
 

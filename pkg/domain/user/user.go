@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/controlado/go-yazio/v2/pkg/domain/date"
+	"github.com/controlado/go-yazio/v3/pkg/domain/date"
 	"github.com/google/uuid"
 )
 

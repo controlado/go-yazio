@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
 )
 
 type TestBuilder struct {

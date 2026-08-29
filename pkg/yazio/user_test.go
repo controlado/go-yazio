@@ -8,17 +8,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v2/internal/infra/client"
-	"github.com/controlado/go-yazio/v2/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v2/internal/testutil/server"
-	"github.com/controlado/go-yazio/v2/internal/testutil/times"
-	"github.com/controlado/go-yazio/v2/pkg/domain/date"
-	"github.com/controlado/go-yazio/v2/pkg/domain/food"
-	"github.com/controlado/go-yazio/v2/pkg/domain/intake"
-	"github.com/controlado/go-yazio/v2/pkg/domain/meal"
-	"github.com/controlado/go-yazio/v2/pkg/domain/unit"
-	"github.com/controlado/go-yazio/v2/pkg/domain/user"
-	"github.com/controlado/go-yazio/v2/pkg/visibility"
+	"github.com/controlado/go-yazio/v3/internal/infra/client"
+	"github.com/controlado/go-yazio/v3/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v3/internal/testutil/server"
+	"github.com/controlado/go-yazio/v3/internal/testutil/times"
+	"github.com/controlado/go-yazio/v3/pkg/domain/date"
+	"github.com/controlado/go-yazio/v3/pkg/domain/food"
+	"github.com/controlado/go-yazio/v3/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v3/pkg/domain/meal"
+	"github.com/controlado/go-yazio/v3/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v3/pkg/domain/user"
+	"github.com/controlado/go-yazio/v3/pkg/visibility"
 	"github.com/google/uuid"
 )
 
@@ -238,10 +238,11 @@ func TestUser_AddFood(t *testing.T) {
 
 	var ( // static data
 		validFood = food.Food{
-			ID:       uuid.New(),
-			Name:     "banana",
-			BaseUnit: unit.Gram,
-			Category: food.Miscellaneous,
+			ID:                      uuid.New(),
+			Name:                    "banana",
+			BaseUnit:                unit.Gram,
+			Category:                food.Miscellaneous,
+			NutrientReferenceAmount: 100,
 			Nutrients: food.Nutrients{
 				intake.Energy:  10,
 				intake.Fat:     10,
@@ -255,6 +256,12 @@ func TestUser_AddFood(t *testing.T) {
 				},
 			},
 		}
+		nutrientsPerUnit = map[string]any{
+			"energy.energy":    0.1,
+			"nutrient.fat":     0.1,
+			"nutrient.protein": 0.1,
+			"nutrient.carb":    0.1,
+		}
 	)
 
 	var (
@@ -265,11 +272,34 @@ func TestUser_AddFood(t *testing.T) {
 			serverStatus   int // default (success): StatusNoContent
 			food           food.Food
 			foodVisibility visibility.Food
+			wantNutrients  map[string]any
 		}{
 			{
 				name:           "valid public food",
 				food:           validFood,
 				foodVisibility: visibility.PublicFood,
+				wantNutrients:  nutrientsPerUnit,
+			},
+			{
+				name: "valid food using custom nutrient reference amount",
+				food: func() food.Food {
+					customReferenceFood := validFood
+					customReferenceFood.NutrientReferenceAmount = 18
+					customReferenceFood.Nutrients = food.Nutrients{
+						intake.Energy:  18,
+						intake.Fat:     18,
+						intake.Protein: 18,
+						intake.Carb:    18,
+					}
+					return customReferenceFood
+				}(),
+				foodVisibility: visibility.PrivateFood,
+				wantNutrients: map[string]any{
+					"energy.energy":    1.0,
+					"nutrient.fat":     1.0,
+					"nutrient.protein": 1.0,
+					"nutrient.carb":    1.0,
+				},
 			},
 			{
 				name:    "food missing nutrients",
@@ -287,6 +317,7 @@ func TestUser_AddFood(t *testing.T) {
 				serverStatus:   http.StatusBadRequest,
 				food:           validFood,
 				foodVisibility: visibility.PrivateFood,
+				wantNutrients:  nutrientsPerUnit,
 			},
 			{
 				name:           "server respond - StatusConflict",
@@ -294,6 +325,7 @@ func TestUser_AddFood(t *testing.T) {
 				serverStatus:   http.StatusConflict,
 				food:           validFood,
 				foodVisibility: visibility.PrivateFood,
+				wantNutrients:  nutrientsPerUnit,
 			},
 		}
 	)
@@ -315,12 +347,7 @@ func TestUser_AddFood(t *testing.T) {
 					"category":   tb.food.Category.String(),
 					"base_unit":  tb.food.BaseUnit.String(),
 					"is_private": tb.foodVisibility.IsPrivate(),
-					"nutrients": map[string]any{
-						"energy.energy":    10.0,
-						"nutrient.fat":     10.0,
-						"nutrient.protein": 10.0,
-						"nutrient.carb":    10.0,
-					},
+					"nutrients":  tb.wantNutrients,
 					"servings": []any{
 						map[string]any{
 							"serving": "piece",
@@ -360,6 +387,46 @@ func TestUser_AddFood(t *testing.T) {
 				tb.foodVisibility,
 			)
 			assert.WantErr(t, tb.wantErr, err)
+		})
+	}
+}
+
+func TestUser_AddFood_InvalidNutrientReferenceAmount(t *testing.T) {
+	t.Parallel()
+
+	testBlocks := []struct {
+		name   string
+		amount float64
+	}{
+		{name: "zero", amount: 0},
+		{name: "negative", amount: -1},
+		{name: "NaN", amount: math.NaN()},
+		{name: "infinity", amount: math.Inf(1)},
+	}
+
+	for _, tb := range testBlocks {
+		t.Run(tb.name, func(t *testing.T) {
+			t.Parallel()
+
+			srv, err := server.New(t, server.AssertRequest(false))
+			assert.NoError(t, err)
+
+			u := &User{
+				client: client.New(client.WithBaseURL(srv.URL)),
+				token:  &Token{expiresAt: times.Future()},
+			}
+			f := food.Food{
+				NutrientReferenceAmount: tb.amount,
+				Nutrients: food.Nutrients{
+					intake.Energy:  1,
+					intake.Fat:     1,
+					intake.Protein: 1,
+					intake.Carb:    1,
+				},
+			}
+
+			err = u.AddFood(context.Background(), f, visibility.PrivateFood)
+			assert.Equal(t, err, food.ErrInvalidNutrientReferenceAmount)
 		})
 	}
 }
