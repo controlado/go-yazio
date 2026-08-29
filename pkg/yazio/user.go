@@ -91,7 +91,7 @@ func (u *User) EntryFood(ctx context.Context, mealTime meal.Time, foodID food.ID
 				return food.ErrAlreadyExists
 			}
 		}
-		return fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return fmt.Errorf("%w: %w", ErrRequestingToYazio, err)
 	}
 
 	return nil
@@ -168,7 +168,7 @@ func (u *User) AddFood(ctx context.Context, f food.Food, vis visibility.Food) er
 				return food.ErrAlreadyExists
 			}
 		}
-		return fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return fmt.Errorf("%w: %w", ErrRequestingToYazio, err)
 	}
 
 	return nil
@@ -206,11 +206,11 @@ func (u *User) Data(ctx context.Context) (d user.Data, err error) {
 				return d, ErrExpiredToken
 			}
 		}
-		return d, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return d, fmt.Errorf("%w: %w", ErrRequestingToYazio, err)
 	}
 
 	if err := resp.BodyStruct(&dto); err != nil {
-		return d, fmt.Errorf("%s: %w", ErrDecodingResponse, err)
+		return d, fmt.Errorf("%w: %w", ErrDecodingResponse, err)
 	}
 
 	return dto.toUserData()
@@ -251,11 +251,11 @@ func (u *User) Intake(ctx context.Context, k intake.Kind, r date.Range) (intake.
 				return nil, ErrExpiredToken
 			}
 		}
-		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return nil, fmt.Errorf("%w: %w", ErrRequestingToYazio, err)
 	}
 
 	if err := resp.BodyStruct(&dto); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrDecodingResponse, err)
+		return nil, fmt.Errorf("%w: %w", ErrDecodingResponse, err)
 	}
 
 	return dto.toRangeSingle(k)
@@ -301,11 +301,11 @@ func (u *User) Macros(ctx context.Context, r date.Range) (intake.MacrosRange, er
 				return nil, ErrExpiredToken
 			}
 		}
-		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return nil, fmt.Errorf("%w: %w", ErrRequestingToYazio, err)
 	}
 
 	if err := resp.BodyStruct(&dto); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return nil, fmt.Errorf("%w: %w", ErrDecodingResponse, err)
 	}
 
 	return dto.toRangeMacro()

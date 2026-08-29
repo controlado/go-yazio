@@ -87,11 +87,11 @@ func (a *API) Login(ctx context.Context, cred Credentials) (*User, error) {
 				return nil, ErrInvalidCredentials
 			}
 		}
-		return nil, fmt.Errorf("%s: %w", ErrRequestingToYazio, err)
+		return nil, fmt.Errorf("%w: %w", ErrRequestingToYazio, err)
 	}
 
 	if err := resp.BodyStruct(&dto); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrDecodingResponse, err)
+		return nil, fmt.Errorf("%w: %w", ErrDecodingResponse, err)
 	}
 
 	return dto.toUser(a.client)
