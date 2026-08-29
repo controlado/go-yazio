@@ -139,8 +139,9 @@ newFood, err := food.New(
         intake.Protein: 1,
         intake.Carb:    14,
     },
-    food.WithNutrientsPer(18),
-    food.WithNewServing(food.Portion, 18),
+    food.WithBaseUnit(unit.Gram),        // use grams as the food's base unit
+    food.WithNutrientsPer(18),           // base the nutrients above on 18 grams
+    food.WithNewServing(food.Pack, 50),  // add a 50-gram pack option in the app
 )
 if err != nil { // food.ErrInvalidName
     log.Fatalf("creating a new food: %v", err)
@@ -155,8 +156,8 @@ if err := user.AddFood(ctx, newFood, visibility.PrivateFood); err != nil {
     log.Fatalf("adding new food %s: %v", newFood, err)
 }
 
-var (
-    entryServing    = food.Serving{Kind: food.Portion, AmountPerServing: 18}
+var ( // one 18-gram portion
+    entryServing    = serving.Portion(18)
     servingQuantity = 1
 )
 
