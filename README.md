@@ -119,7 +119,7 @@ if err != nil {
     log.Fatalf("fetching user water intakes (since regist): %v", err)
 }
 // waterIntakes.Average().String()
-// 320 days: 2223.0ml
+// 320 days: 2223.0g
 ```
 
 </details>

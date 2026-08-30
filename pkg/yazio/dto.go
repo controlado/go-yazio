@@ -7,6 +7,7 @@ import (
 	"github.com/controlado/go-yazio/v4/internal/infra/client"
 	"github.com/controlado/go-yazio/v4/pkg/domain/food"
 	"github.com/controlado/go-yazio/v4/pkg/domain/intake"
+	"github.com/controlado/go-yazio/v4/pkg/domain/unit"
 	"github.com/controlado/go-yazio/v4/pkg/domain/user"
 	"github.com/controlado/go-yazio/v4/pkg/visibility"
 	"github.com/google/uuid"
@@ -122,7 +123,19 @@ func (d getMacroIntakeDTO) toRangeMacro() (mr intake.MacrosRange, err error) {
 
 type getSingleIntakeDTO map[string]float64
 
+func nutrientAPIFactor(k intake.Kind) float64 {
+	switch k.BaseUnit() {
+	case unit.Milligram:
+		return 1e-3
+	case unit.Microgram:
+		return 1e-6
+	default:
+		return 1
+	}
+}
+
 func (d getSingleIntakeDTO) toRangeSingle(k intake.Kind) (sr intake.SingleRange, err error) {
+	var factor = nutrientAPIFactor(k)
 	for date, value := range d {
 		parsedDate, err := time.Parse(layoutISO, date)
 		if err != nil {
@@ -132,7 +145,7 @@ func (d getSingleIntakeDTO) toRangeSingle(k intake.Kind) (sr intake.SingleRange,
 		s := intake.Single{
 			Kind:  k,
 			Date:  parsedDate,
-			Value: value,
+			Value: value / factor,
 		}
 		sr = append(sr, s)
 	}
@@ -160,7 +173,7 @@ func mapNutrients(nuts map[intake.Kind]float64, referenceAmount float64) map[str
 
 	for kind, value := range nuts {
 		nutrientID := kind.ID()
-		out[nutrientID] = value / referenceAmount
+		out[nutrientID] = value * nutrientAPIFactor(kind) / referenceAmount
 	}
 
 	return out

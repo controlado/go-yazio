@@ -164,21 +164,50 @@ func TestUser_Intake(t *testing.T) {
 	var (
 		ctx        = context.Background()
 		testBlocks = []struct {
-			name    string
-			wantErr bool
-			args    args
-			want    intake.SingleRange
+			name           string
+			wantErr        bool
+			args           args
+			responseValues map[time.Time]float64
+			want           intake.SingleRange
 		}{
 			{
-				name: "valid args",
+				name: "grams",
 				args: args{
 					ctx:       ctx,
 					kind:      intake.Sugar,
 					dateRange: date.Range{Start: startDate, End: endDate},
 				},
+				responseValues: map[time.Time]float64{
+					startDate: 89.83,
+					endDate:   50.38,
+				},
 				want: intake.SingleRange{
 					{Kind: intake.Sugar, Date: startDate, Value: 89.83},
 					{Kind: intake.Sugar, Date: endDate, Value: 50.38},
+				},
+			},
+			{
+				name: "milligrams",
+				args: args{
+					ctx:       ctx,
+					kind:      intake.Sodium,
+					dateRange: date.Range{Start: startDate, End: endDate},
+				},
+				responseValues: map[time.Time]float64{startDate: 0.125},
+				want: intake.SingleRange{
+					{Kind: intake.Sodium, Date: startDate, Value: 125},
+				},
+			},
+			{
+				name: "micrograms",
+				args: args{
+					ctx:       ctx,
+					kind:      intake.VitaminD,
+					dateRange: date.Range{Start: startDate, End: endDate},
+				},
+				responseValues: map[time.Time]float64{startDate: 0.000001},
+				want: intake.SingleRange{
+					{Kind: intake.VitaminD, Date: startDate, Value: 1},
 				},
 			},
 		}
@@ -188,10 +217,9 @@ func TestUser_Intake(t *testing.T) {
 		t.Run(tb.name, func(t *testing.T) {
 			t.Parallel()
 
-			serverBody := make(map[string]any, len(tb.want))
-			for _, si := range tb.want {
-				d := si.Date.Format(layoutISO)
-				serverBody[d] = si.Value
+			serverBody := make(map[string]any, len(tb.responseValues))
+			for date, value := range tb.responseValues {
+				serverBody[date.Format(layoutISO)] = value
 			}
 
 			srv, err := server.New(t,
@@ -244,10 +272,12 @@ func TestUser_AddFood(t *testing.T) {
 			Category:                food.Miscellaneous,
 			NutrientReferenceAmount: 100,
 			Nutrients: food.Nutrients{
-				intake.Energy:  10,
-				intake.Fat:     10,
-				intake.Protein: 10,
-				intake.Carb:    10,
+				intake.Energy:   325,
+				intake.Fat:      15,
+				intake.Protein:  10,
+				intake.Carb:     10,
+				intake.Sodium:   500,
+				intake.VitaminD: 598,
 			},
 			Servings: []food.Serving{
 				{
@@ -257,10 +287,12 @@ func TestUser_AddFood(t *testing.T) {
 			},
 		}
 		nutrientsPerUnit = map[string]any{
-			"energy.energy":    0.1,
-			"nutrient.fat":     0.1,
+			"energy.energy":    3.25,
+			"nutrient.fat":     0.15,
 			"nutrient.protein": 0.1,
 			"nutrient.carb":    0.1,
+			"nutrient.sodium":  0.005,
+			"vitamin.d":        0.00000598,
 		}
 	)
 

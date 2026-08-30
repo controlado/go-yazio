@@ -24,9 +24,9 @@ type (
 
 	// Nutrients represents a map of nutrient kinds to their respective values.
 	//
-	// The key is an [intake.Kind] (e.g., protein, carbohydrates, fat, energy)
-	// and the value is the amount of that nutrient in
-	// [Food.NutrientReferenceAmount] units of [Food.BaseUnit].
+	// The key is an [intake.Kind] (e.g., protein, carbohydrates, fat, energy), and the
+	// value is expressed in [intake.Kind.BaseUnit] for [Food.NutrientReferenceAmount]
+	// units of [Food.BaseUnit].
 	Nutrients map[intake.Kind]float64
 
 	// Food represents a food item, detailing its identification, nutritional

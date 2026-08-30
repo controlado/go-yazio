@@ -61,7 +61,7 @@ func TestSingleAverage_String(t *testing.T) {
 			{
 				name: "correct call (water)",
 				sa:   SingleAverage{Water, 320, 2223},
-				want: "320 days: 2223.0ml",
+				want: "320 days: 2223.0g",
 			},
 			{
 				name: "zero-value",

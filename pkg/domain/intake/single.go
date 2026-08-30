@@ -8,7 +8,7 @@ import (
 type Single struct {
 	Kind  Kind
 	Date  time.Time
-	Value float64
+	Value float64 // Value is expressed in Kind.BaseUnit().
 }
 
 type SingleRange []Single

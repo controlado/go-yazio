@@ -13,8 +13,12 @@ func (k Kind) ID() string {
 	return k.id
 }
 
+func (k Kind) BaseUnit() unit.Base {
+	return k.baseUnit
+}
+
 func (k Kind) Unit() string {
-	return k.baseUnit.String()
+	return k.BaseUnit().String()
 }
 
 var (
@@ -22,8 +26,8 @@ var (
 	Fat               = Kind{"nutrient.fat", unit.Gram}
 	Saturated         = Kind{"nutrient.saturated", unit.Gram}
 	TransFat          = Kind{"nutrient.transfat", unit.Gram}
-	Cholesterol       = Kind{"nutrient.cholesterol", unit.Microgram}
-	Sodium            = Kind{"nutrient.sodium", unit.Microgram}
+	Cholesterol       = Kind{"nutrient.cholesterol", unit.Milligram}
+	Sodium            = Kind{"nutrient.sodium", unit.Milligram}
 	Carb              = Kind{"nutrient.carb", unit.Gram}
 	Fiber             = Kind{"nutrient.dietaryfiber", unit.Gram}
 	Sugar             = Kind{"nutrient.sugar", unit.Gram}
@@ -70,6 +74,6 @@ var (
 	MineralTin        = Kind{"mineral.tin", unit.Milligram}
 	MineralVanadium   = Kind{"mineral.vanadium", unit.Microgram}
 	MineralZinc       = Kind{"mineral.zinc", unit.Milligram}
-	Water             = Kind{"nutrient.water", unit.Milliliter}
-	Alcohol           = Kind{"nutrient.alcohol", unit.Milliliter}
+	Water             = Kind{"nutrient.water", unit.Gram}
+	Alcohol           = Kind{"nutrient.alcohol", unit.Gram}
 )
