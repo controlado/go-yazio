@@ -3,8 +3,8 @@ package intake
 import (
 	"testing"
 
-	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v4/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v5/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v5/pkg/domain/unit"
 )
 
 func TestKind_BaseUnit(t *testing.T) {

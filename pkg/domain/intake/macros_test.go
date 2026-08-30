@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v5/internal/testutil/assert"
 )
 
 func TestMacrosRange_Average(t *testing.T) {

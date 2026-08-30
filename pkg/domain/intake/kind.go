@@ -1,7 +1,7 @@
 package intake
 
 import (
-	"github.com/controlado/go-yazio/v4/pkg/domain/unit"
+	"github.com/controlado/go-yazio/v5/pkg/domain/unit"
 )
 
 type Kind struct {

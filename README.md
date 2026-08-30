@@ -3,9 +3,9 @@
     <p>Unofficial Go client for accessing the <a href="https://www.yazio.com/" rel="noopener noreferrer">YAZIO</a> API</p>
     <p>
         <a href="https://github.com/controlado/go-yazio/actions/workflows/test.yml"><img alt="badge: actions-tests" src="https://github.com/controlado/go-yazio/actions/workflows/test.yml/badge.svg"></a>
-        <a href="https://goreportcard.com/report/github.com/controlado/go-yazio/v4"><img alt="badge: go-report-card" src="https://goreportcard.com/badge/github.com/controlado/go-yazio/v4?style=default"></a>
+        <a href="https://goreportcard.com/report/github.com/controlado/go-yazio/v5"><img alt="badge: go-report-card" src="https://goreportcard.com/badge/github.com/controlado/go-yazio/v5?style=default"></a>
         <a href="https://codecov.io/gh/controlado/go-yazio"><img alt="badge: codecov" src="https://codecov.io/gh/controlado/go-yazio/branch/main/graph/badge.svg?token=Fgo4zed2G1"></a>
-        <a href="https://pkg.go.dev/github.com/controlado/go-yazio/v4"><img alt="badge: pkg-reference" src="https://img.shields.io/static/v1?logo=go&label=Reference&message=go-yazio&color=0476b7&style=default"></a>
+        <a href="https://pkg.go.dev/github.com/controlado/go-yazio/v5"><img alt="badge: pkg-reference" src="https://img.shields.io/static/v1?logo=go&label=Reference&message=go-yazio&color=0476b7&style=default"></a>
         <a href="https://wakatime.com/badge/github/controlado/go-yazio"><img alt="badge: wakatime" src="https://wakatime.com/badge/github/controlado/go-yazio.svg?style=default"></a>
     </p>
 </div>
@@ -18,7 +18,7 @@ Expect breaking changes at any time
 ## Installation
 
 ```bash
-go get github.com/controlado/go-yazio/v4
+go get github.com/controlado/go-yazio/v5
 ```
 
 ## Usage examples

@@ -1,6 +1,6 @@
 package serving
 
-import "github.com/controlado/go-yazio/v4/pkg/domain/food"
+import "github.com/controlado/go-yazio/v5/pkg/domain/food"
 
 // Gram returns a [food.Serving] representing one gram.
 func Gram() food.Serving {

@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v4/internal/infra/client"
-	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v4/internal/testutil/server"
-	"github.com/controlado/go-yazio/v4/internal/testutil/times"
+	"github.com/controlado/go-yazio/v5/internal/infra/client"
+	"github.com/controlado/go-yazio/v5/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v5/internal/testutil/server"
+	"github.com/controlado/go-yazio/v5/internal/testutil/times"
 	"github.com/google/uuid"
 )
 

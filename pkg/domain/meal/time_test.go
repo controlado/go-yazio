@@ -3,7 +3,7 @@ package meal
 import (
 	"testing"
 
-	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v5/internal/testutil/assert"
 )
 
 func TestMeal_String(t *testing.T) {

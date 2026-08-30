@@ -3,8 +3,8 @@ package serving
 import (
 	"testing"
 
-	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v4/pkg/domain/food"
+	"github.com/controlado/go-yazio/v5/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v5/pkg/domain/food"
 )
 
 func TestBaseUnitServingConstructors(t *testing.T) {

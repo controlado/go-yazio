@@ -1,4 +1,4 @@
-module github.com/controlado/go-yazio/v4
+module github.com/controlado/go-yazio/v5
 
 go 1.24.2
 

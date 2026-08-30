@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/controlado/go-yazio/v4/internal/testutil/assert"
-	"github.com/controlado/go-yazio/v4/pkg/domain/date"
+	"github.com/controlado/go-yazio/v5/internal/testutil/assert"
+	"github.com/controlado/go-yazio/v5/pkg/domain/date"
 )
 
 func TestUser_SinceRegistAt(t *testing.T) {

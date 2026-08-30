@@ -1,7 +1,7 @@
 package yazio
 
 import (
-	"github.com/controlado/go-yazio/v4/internal/infra/client"
+	"github.com/controlado/go-yazio/v5/internal/infra/client"
 )
 
 func defaultHeaders(tk *Token) client.Payload[string] {
